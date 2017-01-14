@@ -8,7 +8,9 @@ XMINF_DEF="0.1"
 XMAXF_DEF="0.3"
 GC_DEF="G1GC"
 G1_J7_MIN_RAM_THRESHOLD=8000
-
+FULL_GC_PERIOD=${FULL_GC_PERIOD:-300}
+FULL_GC_AGENT_DEBUG=${FULL_GC_AGENT_DEBUG:-0}
+	
 function normalize {
   var="$(echo ${1} | tr '[A-Z]' '[a-z]')"
   prefix="$(echo ${2} | tr '[A-Z]' '[a-z]')"
@@ -95,5 +97,10 @@ if ! `echo $JAVA_OPTS | grep -q "UseCompressedOops"`
 then
     	JAVA_OPTS=$JAVA_OPTS" -XX:+UseCompressedOops"
 fi
+
+[ "$VERT_SCALING" != "false" -a "$VERT_SCALING" != "0" ] && {
+	SCRIPT_PATH=$(dirname $(readlink -f "$0"))
+	JAVA_OPTS="$JAVA_OPTS -javaagent:$SCRIPT_PATH/jelastic-gc-agent.jar=period=$FULL_GC_PERIOD,debug=$FULL_GC_AGENT_DEBUG"
+}
 
 export JAVA_OPTS
