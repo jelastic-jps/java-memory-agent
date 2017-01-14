@@ -1,4 +1,11 @@
 #!/bin/bash        
+# version 1.1
+
+function normalize {
+  var="$(echo $orig | tr '[A-Z]' '[a-z]')"
+  prefix="$(echo $2 | tr '[A-Z]' '[a-z]')"
+  [[ "${var}" == "${prefix}"* ]] && { echo ${1}; } || { [[ "${var}" == "${prefix:1:100}"* ]] && echo "-"${1} || echo ${2}${1}; } 
+}
 
 if ! `echo $JAVA_OPTS | grep -q "\-Xms[[:digit:]\.]"`
 then
