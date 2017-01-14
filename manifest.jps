@@ -1,0 +1,30 @@
+{
+	"jpsVersion": "0.99",
+	"jpsType": "update",
+	"id": "java-vertical-scaling",
+	"name": "Java Memory Vertical Scaling",
+	"categories": [
+		"apps/dev-and-admin-tools"
+	],
+	"version": "1.1",
+	"homepage": "https://github.com/jelastic-jps/java-memory-agent/",
+	"description": {
+		"text": "Java Memory Vertical Scaling",
+		"short": "Java Memory Vertical Scaling"
+	},
+	"onInstall": {
+		"cmd[cp]": [
+			"wget https://raw.githubusercontent.com/jelastic-jps/java-memory-agent/master/scripts/supervisor.sh?222 -O /java",
+			"wget https://raw.githubusercontent.com/jelastic-jps/java-memory-agent/master/scripts/memoryConfig.sh?222 -O /memoryConfig.sh",
+			"/bin/bash /java --install"
+		]
+	},
+	"onUninstall": {
+        "cmd[cp]": [
+			"/bin/bash /java --uninstall"
+		]
+    },
+	"success": {
+		"text": "Done!"
+	}
+}
