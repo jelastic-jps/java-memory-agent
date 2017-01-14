@@ -1,46 +1,46 @@
 #!/bin/bash        
 # version 1.1
 
+XMX_DEF="AUTO"
+XMS_DEF="32M"
+XMN_DEF="30M"
+XMINF_DEF="0.1"
+XMAXF_DEF="0.3"
+GC_DEF="G1GC"
+G1_MIN_RAM_THRESHOLD=8000
+
 function normalize {
-  var="$(echo $orig | tr '[A-Z]' '[a-z]')"
-  prefix="$(echo $2 | tr '[A-Z]' '[a-z]')"
+  var="$(echo ${1} | tr '[A-Z]' '[a-z]')"
+  prefix="$(echo ${2} | tr '[A-Z]' '[a-z]')"
   [[ "${var}" == "${prefix}"* ]] && { echo ${1}; } || { [[ "${var}" == "${prefix:1:100}"* ]] && echo "-"${1} || echo ${2}${1}; } 
 }
 
 if ! `echo $JAVA_OPTS | grep -q "\-Xms[[:digit:]\.]"`
 then
-        [ -z "$XMS" ] && { XMS="-Xms32M"; }
-        JAVA_OPTS=$JAVA_OPTS" $XMS"; 
+        [ -z "$XMS" ] && { XMS="-Xms$XMS_DEF"; }
+        JAVA_OPTS=$JAVA_OPTS" $(normalize $XMS -Xms)"; 
 fi
 
 if ! `echo $JAVA_OPTS | grep -q "\-Xmn[[:digit:]\.]"`
 then
-        [ -z "$XMN" ] && { XMN="-Xmn30M"; }
-        JAVA_OPTS=$JAVA_OPTS" $XMN"; 
+        [ -z "$XMN" ] && { XMN="-Xmn$XMN_DEF"; }
+        JAVA_OPTS=$JAVA_OPTS" $(normalize $XMN -Xmn)"; 
 fi
 
 if ! `echo $JAVA_OPTS | grep -q "\-Xmx[[:digit:]\.]"`
 then
         [ -z "$XMX" ] && {
-        	#optimal XMX = 80% * total available RAM
-        	#it differs a little bit from default values -Xmx http://docs.oracle.com/cd/E13150_01/jrockit_jvm/jrockit/jrdocs/refman/optionX.html
-        	memory_total=`free -m | grep Mem | awk '{print $2}'`;
-        	let XMX=memory_total*8/10;
-        	XMX="-Xmx${XMX}M";
+		[ "$XMX_DEF" == "AUTO" ] && {		
+        		#optimal XMX = 80% * total available RAM
+        		#it differs a little bit from default values -Xmx http://docs.oracle.com/cd/E13150_01/jrockit_jvm/jrockit/jrdocs/refman/optionX.html
+        		memory_total=`free -m | grep Mem | awk '{print $2}'`;
+        		let XMX=memory_total*8/10;
+        		XMX="-Xmx${XMX}M";
+		} || {
+			XMX="-Xmx${XMX_DEF}"
+		}
         }
-        JAVA_OPTS=$JAVA_OPTS" $XMX";
-fi
-
-if ! `echo $JAVA_OPTS | grep -q "\-Xminf[[:digit:]\.]"`
-then
-        [ -z "$XMINF" ] && { XMINF="-Xminf0.1"; }
-        JAVA_OPTS=$JAVA_OPTS" $XMINF"; 
-fi
-
-if ! `echo $JAVA_OPTS | grep -q "\-Xmaxf[[:digit:]\.]"`
-then
-        [ -z "$XMAXF" ] && { XMAXF="-Xmaxf0.3"; }
-        JAVA_OPTS=$JAVA_OPTS" $XMAXF"; 
+        JAVA_OPTS=$JAVA_OPTS" $(normalize $XMX -Xmx)";
 fi
 
 XMX_VALUE=`echo $XMX | grep -o "[0-9]*"`;
@@ -49,6 +49,19 @@ if [[ $XMX_UNIT == "g" ]] || [[ $XMX_UNIT == "G" ]] ; then
 	let XMX_VALUE=$XMX_VALUE*1024; 
 fi
 
+if ! `echo $JAVA_OPTS | grep -q "\-Xminf[[:digit:]\.]"`
+then
+        [ -z "$XMINF" ] && { XMINF="-Xminf$XMINF_DEF"; }
+        JAVA_OPTS=$JAVA_OPTS" $(normalize $XMINF -Xminf)"; 
+fi
+
+if ! `echo $JAVA_OPTS | grep -q "\-Xmaxf[[:digit:]\.]"`
+then
+        [ -z "$XMAXF" ] && { XMAXF="-Xmaxf$XMAXF_DEF"; }
+        JAVA_OPTS=$JAVA_OPTS" $(normalize $XMAXF -Xmaxf)"; 
+fi
+
+# checking the need of MaxPermSize setting 
 JAVA_VERSION=$(java -version 2>&1 | grep version |  awk -F '.' '{print $2}')
 
 if ! `echo $JAVA_OPTS | grep -q "\-XX:MaxPermSize"`
@@ -70,10 +83,9 @@ if ! `echo $JAVA_OPTS | grep -q "\-XX:+Use.*GC"`
 then	
 	[ -z "$GC" ] && {  
         	[ $JAVA_VERSION -le 7 ] && {
-       			GC_LIMMIT=8000;
-	    		[ "$XMX_VALUE" -ge "$GC_LIMMIT" ] && GC="-XX:+UseG1GC" || GC="-XX:+UseParNewGC";
+	    		[ "$XMX_VALUE" -ge "$G1_MIN_RAM_THRESHOLD" ] && GC="-XX:+UseG1GC" || GC="-XX:+UseParNewGC";
 	    	} || {
-	    		GC="-XX:+UseG1GC";
+	    		GC="-XX:+Use$GC_DEF";
 	    	}
      	}
         JAVA_OPTS=$JAVA_OPTS" $GC"; 
