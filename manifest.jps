@@ -12,10 +12,13 @@
 		"text": "Java Memory Vertical Scaling",
 		"short": "Java Memory Vertical Scaling"
 	},
+	"globals": {
+		"baseUrl": "https://raw.githubusercontent.com/jelastic-jps/java-memory-agent/master/scripts"
+	},
 	"onInstall": {
 		"cmd[cp]": [
-			"wget https://raw.githubusercontent.com/jelastic-jps/java-memory-agent/master/scripts/supervisor.sh?123 -O /java",
-			"wget https://raw.githubusercontent.com/jelastic-jps/java-memory-agent/master/scripts/memoryConfig.sh?123 -O /memoryConfig.sh",
+			"wget ${globals.baseUrl}/supervisor.sh?123 -O /java",
+			"wget ${globals.baseUrl}/memoryConfig.sh?123 -O /memoryConfig.sh",
 			"/bin/bash /java --install"
 		]
 	},
