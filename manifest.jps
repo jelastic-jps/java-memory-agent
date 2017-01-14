@@ -17,16 +17,16 @@
 	},
 	"onInstall": {
 		"cmd[cp]": [
-			"wget ${globals.baseUrl}/supervisor.sh?123 -O /java",
-			"wget ${globals.baseUrl}/memoryConfig.sh?123 -O /memoryConfig.sh",
+			"wget ${globals.baseUrl}/supervisor.sh? -O /java",
+			"wget ${globals.baseUrl}/memoryConfig.sh? -O /memoryConfig.sh",
 			"/bin/bash /java --install"
 		]
 	},
 	"onUninstall": {
-        "cmd[cp]": [
-			"/bin/bash /java --uninstall"
+		"cmd[cp]": [
+			"/bin/bash /java --uninstall &"
 		]
-    },
+	},
 	"success": {
 		"text": "Done!"
 	}
