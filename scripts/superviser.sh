@@ -11,7 +11,7 @@ SCRIPT_PATH=$(dirname "$SCRIPT")
    sed -i '/JAVA_ORIG=/d' /etc/profile
    echo "JAVA_ORIG=$JAVA_ORIG" >> /etc/profile   
 
-   sed -i '/PATH=$SCRIPT_PATH/d' /etc/profile
+   sed -i "/PATH=$(echo ${SCRIPT_PATH//\//\\/})/d" /etc/profile
    echo "PATH=$SCRIPT_PATH:\$PATH" >> /etc/profile
  
    JAVA_AGENT="$SCRIPT_PATH/java";
