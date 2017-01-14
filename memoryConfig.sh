@@ -7,7 +7,7 @@ XMN_DEF="30M"
 XMINF_DEF="0.1"
 XMAXF_DEF="0.3"
 GC_DEF="G1GC"
-G1_MIN_RAM_THRESHOLD=8000
+G1_J7_MIN_RAM_THRESHOLD=8000
 
 function normalize {
   var="$(echo ${1} | tr '[A-Z]' '[a-z]')"
@@ -83,7 +83,7 @@ if ! `echo $JAVA_OPTS | grep -q "\-XX:+Use.*GC"`
 then	
 	[ -z "$GC" ] && {  
         	[ $JAVA_VERSION -le 7 ] && {
-	    		[ "$XMX_VALUE" -ge "$G1_MIN_RAM_THRESHOLD" ] && GC="-XX:+UseG1GC" || GC="-XX:+UseParNewGC";
+	    		[ "$XMX_VALUE" -ge "$G1_J7_MIN_RAM_THRESHOLD" ] && GC="-XX:+UseG1GC" || GC="-XX:+UseParNewGC";
 	    	} || {
 	    		GC="-XX:+Use$GC_DEF";
 	    	}
