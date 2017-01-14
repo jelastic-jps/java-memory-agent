@@ -9,10 +9,10 @@ SCRIPT_PATH=$(dirname "$SCRIPT")
    JAVA_ORIG=$(which java)
    
    sed -i '/JAVA_ORIG=/d' /etc/profile
-   echo "JAVA_ORIG=$JAVA_ORIG" >> /etc/profile   
+   echo "export JAVA_ORIG=$JAVA_ORIG" >> /etc/profile   
 
    sed -i "/PATH=$(echo ${SCRIPT_PATH//\//\\/})/d" /etc/profile
-   echo "PATH=$SCRIPT_PATH:\$PATH" >> /etc/profile
+   echo "export PATH=$SCRIPT_PATH:\$PATH" >> /etc/profile
  
    JAVA_AGENT="$SCRIPT_PATH/java";
    mv $SCRIPT $JAVA_AGENT
