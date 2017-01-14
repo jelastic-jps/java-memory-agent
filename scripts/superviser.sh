@@ -7,13 +7,19 @@ SCRIPT_PATH=$(dirname "$SCRIPT")
 
 [[ "$1" == "--install" ]] && {
    JAVA_ORIG=$(which java)
-   echo "JAVA_ORIG=$JAVA_ORIG" >> /etc/environment   
-   echo "PATH=$SCRIPT_PATH:\$PATH" >> /etc/environment
+   
+   sed -i '/JAVA_ORIG=/d' /etc/profile
+   echo "JAVA_ORIG=$JAVA_ORIG" >> /etc/profile   
+
+   sed -i '/PATH=$SCRIPT_PATH/d' /etc/profile
+   echo "PATH=$SCRIPT_PATH:\$PATH" >> /etc/profile
  
-   mv $SCRIPT "$SCRIPT_PATH/java"
-   chmod $( stat -f '%p' ${JAVA_ORIG} ) "$SCRIPT_PATH/java"
+   JAVA_AGENT="$SCRIPT_PATH/java";
+   mv $SCRIPT $JAVA_AGENT
+   
+   chown --reference=$JAVA_ORIG $JAVA_AGENT
+   chmod --reference=$JAVA_ORIG $JAVA_AGENT
+} || {
+   source "$SCRIPT_PATH/memoryConfig.sh"
+   $JAVA_ORIG "$@"
 }
-
-source "$SCRIPT_PATH/memoryConfig.sh";
-
-$JAVA_ORIG "$@"
