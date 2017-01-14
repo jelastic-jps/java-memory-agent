@@ -1,6 +1,6 @@
 #!/bin/bash        
-# version 1.1
 
+# defaults
 XMX_DEF="AUTO"
 XMS_DEF="32M"
 XMN_DEF="30M"
