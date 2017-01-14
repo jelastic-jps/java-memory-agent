@@ -4,7 +4,7 @@
 SCRIPT=$(readlink -f "$0")
 # Absolute path this script is in, thus /home/user/bin
 SCRIPT_PATH=$(dirname "$SCRIPT")
-JAVA_AGENT="$SCRIPT_PATH/java"
+JAVA="$SCRIPT_PATH/java"
 MEMORY_CONF="$SCRIPT_PATH/memoryConfig.sh"
   
 [[ "$1" == "--install" ]] && {
@@ -16,16 +16,16 @@ MEMORY_CONF="$SCRIPT_PATH/memoryConfig.sh"
    sed -i "/PATH=$(echo ${SCRIPT_PATH//\//\\/})/d" /etc/profile
    echo "export PATH=$SCRIPT_PATH:\$PATH" >> /etc/profile
  
-   mv $SCRIPT $JAVA_AGENT
+   mv $SCRIPT $JAVA
    
-   chown --reference=$JAVA_ORIG $JAVA_AGENT
-   chmod --reference=$JAVA_ORIG $JAVA_AGENT
+   chown --reference=$JAVA_ORIG $JAVA
+   chmod --reference=$JAVA_ORIG $JAVA
 } || { 
    [[ "$1" == "--uninstall" ]] && { 
       sed -i '/JAVA_ORIG=/d' /etc/profile
       sed -i "/PATH=$(echo ${SCRIPT_PATH//\//\\/})/d" /etc/profile
       
-      rm -f $JAVA_AGENT
+      rm -f $JAVA
       rm -f $MEMORY_CONF
    } || {
       source $MEMORY_CONF
