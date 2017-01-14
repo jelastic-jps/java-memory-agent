@@ -62,7 +62,7 @@ then
 fi
 
 # checking the need of MaxPermSize setting 
-JAVA_VERSION=$(java -version 2>&1 | grep version |  awk -F '.' '{print $2}')
+JAVA_VERSION=$(${JAVA_ORIG:-java} -version 2>&1 | grep version |  awk -F '.' '{print $2}')
 
 if ! `echo $JAVA_OPTS | grep -q "\-XX:MaxPermSize"`
 then
