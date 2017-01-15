@@ -65,14 +65,18 @@ then
         ARGS="$(normalize $XMAXF -Xmaxf) $ARGS"; 
 fi
 
-# checking the need of MaxPermSize setting 
-JAVA_VERSION=$(${JAVA_ORIG:-java} -version 2>&1 | grep version |  awk -F '.' '{print $2}')
+JAVA_VERSION=$(${JAVA_ORIG:-java} -version 2>&1 | grep version)
+JAVA_VERSION=${JAVA_VERSION//\"/}
+JAVA_MAJOR_VERSION=$(echo $JAVA_VERSION |  awk -F '[._-]' '{print $2}')
+JAVA_MINOR_VERSION=$(echo $JAVA_VERSION |  awk -F '[._-]' '{print $3}')
+JAVA_UPDATE_VERSION=$(echo $JAVA_VERSION |  awk -F '[._-]' '{print $4}')
 
+# checking the need of MaxPermSize setting 
 if ! `echo $ARGS | grep -q "\-XX:MaxPermSize"`
 then
         [ -z "$MAXPERMSIZE" ] && { 
         	# if java version <= 7 then configure MaxPermSize otherwise ignore 
-        	[ $JAVA_VERSION -le 7 ] && {
+        	[ $JAVA_MAJOR_VERSION -le 7 ] && {
 			let MAXPERMSIZE_VALUE=$XMX_VALUE/10; 
         		[ $MAXPERMSIZE_VALUE -ge 64 ] && {
 				[ $MAXPERMSIZE_VALUE -gt 256 ] && { MAXPERMSIZE_VALUE=256; }
@@ -86,7 +90,7 @@ fi
 if ! `echo $ARGS | grep -q "\-XX:+Use.*GC"`
 then	
 	[ -z "$GC" ] && {  
-        	[ $JAVA_VERSION -le 7 ] && {
+        	[ $JAVA_MAJOR_VERSION -le 7 ] && {
 	    		[ "$XMX_VALUE" -ge "$G1_J7_MIN_RAM_THRESHOLD" ] && GC="-XX:+UseG1GC" || GC="-XX:+UseParNewGC";
 	    	} || {
 	    		GC="-XX:+Use$GC_DEF";
