@@ -104,6 +104,17 @@ then
     	ARGS="-XX:+UseCompressedOops $ARGS"
 fi
 
+if ! `echo $ARGS | grep -q "UseStringDeduplication"`
+then
+	if  `echo $ARGS | grep -q "\-XX:+UseG1GC"`
+	then
+		if [ $JAVA_MAJOR_VERSION -gt 8 ] || ([ $JAVA_MAJOR_VERSION -eq 8 ] && ([ $JAVA_MINOR_VERSION -gt 0 ] || [ $JAVA_UPDATE_VERSION -ge 20 ]))
+		then	
+    			ARGS="-XX:+UseStringDeduplication $ARGS"
+		fi 
+	fi 
+fi
+
 if ! `echo $ARGS | grep -q "jelastic\-gc\-agent\.jar"`
 then	
 	[ "$VERT_SCALING" != "false" -a "$VERT_SCALING" != "0" ] && {
