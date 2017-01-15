@@ -17,19 +17,21 @@ function normalize {
   [[ "${var}" == "${prefix}"* ]] && { echo ${1}; } || { [[ "${var}" == "${prefix:1:100}"* ]] && echo "-"${1} || echo ${2}${1}; } 
 }
 
-if ! `echo $JAVA_OPTS | grep -q "\-Xms[[:digit:]\.]"`
+ARGS=$@
+
+if ! `echo $ARGS | grep -q "\-Xms[[:digit:]\.]"`
 then
         [ -z "$XMS" ] && { XMS="-Xms$XMS_DEF"; }
-        JAVA_OPTS=$JAVA_OPTS" $(normalize $XMS -Xms)"; 
+        ARGS="$(normalize $XMS -Xms) $ARGS"; 
 fi
 
-if ! `echo $JAVA_OPTS | grep -q "\-Xmn[[:digit:]\.]"`
+if ! `echo $ARGS | grep -q "\-Xmn[[:digit:]\.]"`
 then
         [ -z "$XMN" ] && { XMN="-Xmn$XMN_DEF"; }
-        JAVA_OPTS=$JAVA_OPTS" $(normalize $XMN -Xmn)"; 
+        ARGS="$(normalize $XMN -Xmn) $ARGS"; 
 fi
 
-if ! `echo $JAVA_OPTS | grep -q "\-Xmx[[:digit:]\.]"`
+if ! `echo $ARGS | grep -q "\-Xmx[[:digit:]\.]"`
 then
         [ -z "$XMX" ] && {
 		[ "$XMX_DEF" == "AUTO" ] && {		
@@ -42,7 +44,7 @@ then
 			XMX="-Xmx${XMX_DEF}"
 		}
         }
-        JAVA_OPTS=$JAVA_OPTS" $(normalize $XMX -Xmx)";
+        ARGS="$(normalize $XMX -Xmx) $ARGS";
 fi
 
 XMX_VALUE=`echo $XMX | grep -o "[0-9]*"`;
@@ -51,22 +53,22 @@ if [[ $XMX_UNIT == "g" ]] || [[ $XMX_UNIT == "G" ]] ; then
 	let XMX_VALUE=$XMX_VALUE*1024; 
 fi
 
-if ! `echo $JAVA_OPTS | grep -q "\-Xminf[[:digit:]\.]"`
+if ! `echo $ARGS | grep -q "\-Xminf[[:digit:]\.]"`
 then
         [ -z "$XMINF" ] && { XMINF="-Xminf$XMINF_DEF"; }
-        JAVA_OPTS=$JAVA_OPTS" $(normalize $XMINF -Xminf)"; 
+        ARGS="$(normalize $XMINF -Xminf) $ARGS"; 
 fi
 
-if ! `echo $JAVA_OPTS | grep -q "\-Xmaxf[[:digit:]\.]"`
+if ! `echo $ARGS | grep -q "\-Xmaxf[[:digit:]\.]"`
 then
         [ -z "$XMAXF" ] && { XMAXF="-Xmaxf$XMAXF_DEF"; }
-        JAVA_OPTS=$JAVA_OPTS" $(normalize $XMAXF -Xmaxf)"; 
+        ARGS="$(normalize $XMAXF -Xmaxf) $ARGS"; 
 fi
 
 # checking the need of MaxPermSize setting 
 JAVA_VERSION=$(${JAVA_ORIG:-java} -version 2>&1 | grep version |  awk -F '.' '{print $2}')
 
-if ! `echo $JAVA_OPTS | grep -q "\-XX:MaxPermSize"`
+if ! `echo $ARGS | grep -q "\-XX:MaxPermSize"`
 then
         [ -z "$MAXPERMSIZE" ] && { 
         	# if java version <= 7 then configure MaxPermSize otherwise ignore 
@@ -78,10 +80,10 @@ then
                 	}
 		}
   	}
-        JAVA_OPTS=$JAVA_OPTS" $MAXPERMSIZE";
+        ARGS="$MAXPERMSIZE $ARGS";
 fi
  
-if ! `echo $JAVA_OPTS | grep -q "\-XX:+Use.*GC"`
+if ! `echo $ARGS | grep -q "\-XX:+Use.*GC"`
 then	
 	[ -z "$GC" ] && {  
         	[ $JAVA_VERSION -le 7 ] && {
@@ -90,22 +92,23 @@ then
 	    		GC="-XX:+Use$GC_DEF";
 	    	}
      	}
-        JAVA_OPTS=$JAVA_OPTS" $GC"; 
+        ARGS="$GC $ARGS"; 
 fi 
    
-if ! `echo $JAVA_OPTS | grep -q "UseCompressedOops"`
+if ! `echo $ARGS | grep -q "UseCompressedOops"`
 then
-    	JAVA_OPTS=$JAVA_OPTS" -XX:+UseCompressedOops"
+    	ARGS="-XX:+UseCompressedOops $ARGS"
 fi
 
-if ! `echo $JAVA_OPTS | grep -q "jelastic\-gc\-agent\.jar"`
+if ! `echo $ARGS | grep -q "jelastic\-gc\-agent\.jar"`
 then	
 	[ "$VERT_SCALING" != "false" -a "$VERT_SCALING" != "0" ] && {
 		SCRIPT_PATH=$(dirname $(readlink -f "$0"))
 		AGENT="$SCRIPT_PATH/jelastic-gc-agent.jar"
 		[ ! -f $AGENT ] && AGENT="$SCRIPT_PATH/lib/jelastic-gc-agent.jar"
-		JAVA_OPTS="$JAVA_OPTS -javaagent:$AGENT=period=$FULL_GC_PERIOD,debug=$FULL_GC_AGENT_DEBUG"
+		ARGS="-javaagent:$AGENT=period=$FULL_GC_PERIOD,debug=$FULL_GC_AGENT_DEBUG $ARGS"
 	}
 fi
 
-export JAVA_OPTS
+set -- $ARGS
+
