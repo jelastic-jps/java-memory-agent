@@ -16,19 +16,23 @@
 		"baseUrl": "https://raw.githubusercontent.com/jelastic-jps/java-memory-agent/master/scripts",
 		"homeDir": "/java_agent"
 	},
-	"onInstall": {
-		"cmd[cp]": [
-			"mkdir -p ${globals.homeDir}",
-			"wget ${globals.baseUrl}/supervisor.sh?3 -O ${globals.homeDir}/java",
-			"wget ${globals.baseUrl}/memoryConfig.sh?3 -O ${globals.homeDir}/memoryConfig.sh",
-			"wget ${globals.baseUrl}/../lib/jelastic-gc-agent.jar -O ${globals.homeDir}/jelastic-gc-agent.jar",
-			"/bin/bash ${globals.homeDir}/java --install >> /var/log/run.log"
-		]
-	},
+	"onInstall": "install",
+	"onAfterRedeployContainer": "install",
 	"onUninstall": {
 		"cmd[cp]": [
 			"/bin/bash ${globals.homeDir}/java --uninstall >> /var/log/run.log"
 		]
+	},
+	"actions": {
+		"install": {
+			"cmd[cp]": [
+				"mkdir -p ${globals.homeDir}",
+				"wget ${globals.baseUrl}/supervisor.sh?3 -O ${globals.homeDir}/java",
+				"wget ${globals.baseUrl}/memoryConfig.sh?3 -O ${globals.homeDir}/memoryConfig.sh",
+				"wget ${globals.baseUrl}/../lib/jelastic-gc-agent.jar -O ${globals.homeDir}/jelastic-gc-agent.jar",
+				"/bin/bash ${globals.homeDir}/java --install >> /var/log/run.log"
+			]
+		}
 	},
 	"success": {
 		"text": "Done!"
