@@ -20,12 +20,12 @@
 			"wget ${globals.baseUrl}/supervisor.sh? -O /java",
 			"wget ${globals.baseUrl}/memoryConfig.sh? -O /memoryConfig.sh",
 			"wget ${globals.baseUrl}/../lib/jelastic-gc-agent.jar -O /jelastic-gc-agent.jar",
-			"/bin/bash /java --install"
+			"/bin/bash /java --install &>> /var/log/run.log"
 		]
 	},
 	"onUninstall": {
 		"cmd[cp]": [
-			"/bin/bash /java --uninstall &"
+			"/bin/bash /java --uninstall &>> /var/log/run.log"
 		]
 	},
 	"success": {
