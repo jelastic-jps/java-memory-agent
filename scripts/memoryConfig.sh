@@ -1,6 +1,6 @@
 #!/bin/bash        
 
-# defaults
+#defaults
 XMX_DEF="AUTO"
 XMS_DEF="32M"
 XMN_DEF="30M"
@@ -71,11 +71,11 @@ JAVA_MAJOR_VERSION=$(echo $JAVA_VERSION |  awk -F '[._-]' '{print $2}')
 JAVA_MINOR_VERSION=$(echo $JAVA_VERSION |  awk -F '[._-]' '{print $3}')
 JAVA_UPDATE_VERSION=$(echo $JAVA_VERSION |  awk -F '[._-]' '{print $4}')
 
-# checking the need of MaxPermSize setting 
+#checking the need of MaxPermSize param 
 if ! `echo $ARGS | grep -q "\-XX:MaxPermSize"`
 then
         [ -z "$MAXPERMSIZE" ] && { 
-        	# if java version <= 7 then configure MaxPermSize otherwise ignore 
+        	#if java version <= 7 then configure MaxPermSize otherwise ignore 
         	[ $JAVA_MAJOR_VERSION -le 7 ] && {
 			let MAXPERMSIZE_VALUE=$XMX_VALUE/10; 
         		[ $MAXPERMSIZE_VALUE -ge 64 ] && {
@@ -104,10 +104,12 @@ then
     	ARGS="-XX:+UseCompressedOops $ARGS"
 fi
 
+#enabling string deduplication feature https://blogs.oracle.com/java-platform-group/entry/g1_from_garbage_collector_to
 if ! `echo $ARGS | grep -q "UseStringDeduplication"`
 then
 	if  `echo $ARGS | grep -q "\-XX:+UseG1GC"`
 	then
+		#this feature works for java >= 1.8.0_20
 		if [ $JAVA_MAJOR_VERSION -gt 8 ] || ([ $JAVA_MAJOR_VERSION -eq 8 ] && ([ $JAVA_MINOR_VERSION -gt 0 ] || [ $JAVA_UPDATE_VERSION -ge 20 ]))
 		then	
     			ARGS="-XX:+UseStringDeduplication $ARGS"
