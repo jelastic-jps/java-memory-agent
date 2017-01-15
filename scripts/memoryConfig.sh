@@ -98,9 +98,14 @@ then
     	JAVA_OPTS=$JAVA_OPTS" -XX:+UseCompressedOops"
 fi
 
-[ "$VERT_SCALING" != "false" -a "$VERT_SCALING" != "0" ] && {
-	SCRIPT_PATH=$(dirname $(readlink -f "$0"))
-	JAVA_OPTS="$JAVA_OPTS -javaagent:$SCRIPT_PATH/jelastic-gc-agent.jar=period=$FULL_GC_PERIOD,debug=$FULL_GC_AGENT_DEBUG"
-}
+if ! `echo $JAVA_OPTS | grep -q "jelastic\-gc\-agent\.jar"`
+then	
+	[ "$VERT_SCALING" != "false" -a "$VERT_SCALING" != "0" ] && {
+		SCRIPT_PATH=$(dirname $(readlink -f "$0"))
+		AGENT="$SCRIPT_PATH/jelastic-gc-agent.jar"
+		[ ! -f $AGENT ] && AGENT="$SCRIPT_PATH/lib/jelastic-gc-agent.jar"
+		JAVA_OPTS="$JAVA_OPTS -javaagent:$AGENT=period=$FULL_GC_PERIOD,debug=$FULL_GC_AGENT_DEBUG"
+	}
+fi
 
 export JAVA_OPTS
