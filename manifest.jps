@@ -19,6 +19,7 @@
 		"cmd[cp]": [
 			"wget ${globals.baseUrl}/supervisor.sh? -O /java",
 			"wget ${globals.baseUrl}/memoryConfig.sh? -O /memoryConfig.sh",
+			"wget ${globals.baseUrl}/../lib/jelastic-gc-agent.jar -O /jelastic-gc-agent.jar",
 			"/bin/bash /java --install"
 		]
 	},
