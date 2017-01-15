@@ -19,15 +19,15 @@
 	"onInstall": {
 		"cmd[cp]": [
 			"mkdir -p ${globals.homeDir}",
-			"wget ${globals.baseUrl}/supervisor.sh? -xO ${globals.homeDir}/java",
-			"wget ${globals.baseUrl}/memoryConfig.sh? -xO ${globals.homeDir}/memoryConfig.sh",
-			"wget ${globals.baseUrl}/../lib/jelastic-gc-agent.jar -xO ${globals.homeDir}/jelastic-gc-agent.jar",
-			"/bin/bash /java --install &>> /var/log/run.log"
+			"wget ${globals.baseUrl}/supervisor.sh?3 -O ${globals.homeDir}/java",
+			"wget ${globals.baseUrl}/memoryConfig.sh?3 -O ${globals.homeDir}/memoryConfig.sh",
+			"wget ${globals.baseUrl}/../lib/jelastic-gc-agent.jar -O ${globals.homeDir}/jelastic-gc-agent.jar",
+			"/bin/bash ${globals.homeDir}/java --install >> /var/log/run.log"
 		]
 	},
 	"onUninstall": {
 		"cmd[cp]": [
-			"/bin/bash /java --uninstall &>> /var/log/run.log"
+			"/bin/bash ${globals.homeDir}/java --uninstall >> /var/log/run.log"
 		]
 	},
 	"success": {
