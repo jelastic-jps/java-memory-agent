@@ -18,9 +18,10 @@
 	},
 	"onInstall": {
 		"cmd[cp]": [
-			"wget ${globals.baseUrl}/supervisor.sh? -O ${globals.homeDir}/java",
-			"wget ${globals.baseUrl}/memoryConfig.sh? -O ${globals.homeDir}/memoryConfig.sh",
-			"wget ${globals.baseUrl}/../lib/jelastic-gc-agent.jar -O ${globals.homeDir}/jelastic-gc-agent.jar",
+			"mkdir -p ${globals.homeDir}",
+			"wget ${globals.baseUrl}/supervisor.sh? -xO ${globals.homeDir}/java",
+			"wget ${globals.baseUrl}/memoryConfig.sh? -xO ${globals.homeDir}/memoryConfig.sh",
+			"wget ${globals.baseUrl}/../lib/jelastic-gc-agent.jar -xO ${globals.homeDir}/jelastic-gc-agent.jar",
 			"/bin/bash /java --install &>> /var/log/run.log"
 		]
 	},
