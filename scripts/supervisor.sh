@@ -16,7 +16,7 @@ MEMORY_CONF="$SCRIPT_PATH/memoryConfig.sh"
    sed -i "/PATH=$(echo ${SCRIPT_PATH//\//\\/})/d" /etc/profile
    echo "export PATH=$SCRIPT_PATH:\$PATH" >> /etc/profile
  
-   mv $SCRIPT $JAVA
+   [ $SCRIPT != $JAVA ] && mv $SCRIPT $JAVA
    
    /bin/chown --reference=$JAVA_ORIG $JAVA
    /bin/chmod --reference=$JAVA_ORIG $JAVA   
