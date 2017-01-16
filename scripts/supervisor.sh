@@ -18,8 +18,18 @@ MEMORY_CONF="$SCRIPT_PATH/memoryConfig.sh"
  
    mv $SCRIPT $JAVA
    
-   chown --reference=$JAVA_ORIG $JAVA
-   chmod --reference=$JAVA_ORIG $JAVA
+   echo "****" >> /root/log
+   echo $SHELL >> /root/log
+   echo $0 >> /root/log
+   echo $PATH >> /root/log
+   echo $JAVA_ORIG >> /root/log
+   echo $JAVA >> /root/log
+   
+   /bin/chown --reference=$JAVA_ORIG $JAVA
+   /bin/chmod --reference=$JAVA_ORIG $JAVA
+   
+   echo "&&&&" >> /root/log
+   
 } || { 
    [[ "$1" == "--uninstall" ]] && { 
       sed -i '/JAVA_ORIG=/d' /etc/profile
