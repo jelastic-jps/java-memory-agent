@@ -28,8 +28,8 @@
 			"cmd[cp]": [
 				"while $(pgrep 'apk|apt|yum' 1> /dev/null); do sleep 1; echo waiting... >> /var/log/run.log; done",
 				"mkdir -p ${globals.homeDir}",
-				"wget ${globals.baseUrl}/supervisor.sh?4 -O ${globals.homeDir}/java",
-				"wget ${globals.baseUrl}/memoryConfig.sh?4 -O ${globals.homeDir}/memoryConfig.sh",
+				"wget ${globals.baseUrl}/supervisor.sh -O ${globals.homeDir}/java",
+				"wget ${globals.baseUrl}/memoryConfig.sh -O ${globals.homeDir}/memoryConfig.sh",
 				"wget ${globals.baseUrl}/../lib/jelastic-gc-agent.jar -O ${globals.homeDir}/jelastic-gc-agent.jar",
 				"/bin/bash ${globals.homeDir}/java --install >> /var/log/run.log"
 			],
