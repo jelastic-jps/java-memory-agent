@@ -8,7 +8,13 @@ JAVA="$SCRIPT_PATH/java"
 MEMORY_CONF="$SCRIPT_PATH/memoryConfig.sh"
   
 [[ "$1" == "--install" ]] && {
-   JAVA_ORIG=$(which java)
+   
+   LINK=$(which java)
+   JAVA_BIN=$(readlink -f $LINK)
+   JAVA_ORIG="${JAVA_BIN}.orig"
+   mv $JAVA_BIN $JAVA_ORIG 
+   cp $SCRIPT_PATH $JAVA_BIN
+   chmod +x $JAVA_BIN
    
    sed -i '/JAVA_ORIG=/d' /etc/profile
    echo "export JAVA_ORIG=$JAVA_ORIG" >> /etc/profile   
@@ -21,11 +27,17 @@ MEMORY_CONF="$SCRIPT_PATH/memoryConfig.sh"
    /bin/chown --reference=$JAVA_ORIG $JAVA
    /bin/chmod --reference=$JAVA_ORIG $JAVA   
    
+   /bin/chown --reference=$JAVA_ORIG $JAVA_BIN
+   /bin/chmod --reference=$JAVA_ORIG $JAVA_BIN   
+
+
 } || { 
    [[ "$1" == "--uninstall" ]] && { 
       sed -i '/JAVA_ORIG=/d' /etc/profile
       sed -i "/PATH=$(echo ${SCRIPT_PATH//\//\\/})/d" /etc/profile
       
+      rm -f $JAVA_BIN
+      mv $JAVA_ORIG $JAVA_BIN
       rm -f $JAVA
       rm -f $MEMORY_CONF
    } || {
