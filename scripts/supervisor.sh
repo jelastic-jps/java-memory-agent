@@ -7,7 +7,7 @@ SCRIPT_PATH=$(dirname "$SCRIPT")
 AGENT_DIR="/java_agent"
 JAVA="$AGENT_DIR/java"
 MEMORY_CONF="$AGENT_DIR/memoryConfig.sh"
-ENVS_FILE = "${AGENT_DIR}/envs"
+ENVS_FILE="$AGENT_DIR/envs"
   
 if [[ "$1" == "--install" ]]; then
    
@@ -42,7 +42,7 @@ if [[ "$1" == "--install" ]]; then
 elif [[ "$1" == "--uninstall" ]]; then
       sed -i "/PATH=$(echo ${AGENT_DIR//\//\\/})/d" /etc/profile
       
-      sourse $ENVS_FILE
+      source $ENVS_FILE
       rm -f $JAVA_BIN
       mv $JAVA_ORIG $JAVA_BIN
       rm -f $JAVA
@@ -50,7 +50,7 @@ elif [[ "$1" == "--uninstall" ]]; then
       rm -f $ENVS_FILE
       rm -rf $AGENT_DIR       
 else
-      sourse $ENVS_FILE
+      source $ENVS_FILE
       source $MEMORY_CONF
       $JAVA_ORIG "$@"
 fi
