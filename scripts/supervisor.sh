@@ -47,10 +47,9 @@ elif [[ "$1" == "--uninstall" ]]; then
       source $ENVS_FILE
       rm -f $JAVA_BIN
       mv $JAVA_ORIG $JAVA_BIN
-      rm -f $JAVA
-      rm -f $MEMORY_CONF
-      rm -f $ENVS_FILE
+
       rm -rf $AGENT_DIR       
+      
       echo "Java memory agent has been uninstalled"      
 else
       source $ENVS_FILE
