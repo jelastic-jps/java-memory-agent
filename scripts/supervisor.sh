@@ -7,7 +7,7 @@ SCRIPT_PATH=$(dirname "$SCRIPT")
 JAVA="$SCRIPT_PATH/java"
 MEMORY_CONF="$SCRIPT_PATH/memoryConfig.sh"
   
-[[ "$1" == "--install" ]] && {
+if [[ "$1" == "--install" ]]; then
    
    #checking link to java 
    LINK=$(which java)
@@ -36,8 +36,7 @@ MEMORY_CONF="$SCRIPT_PATH/memoryConfig.sh"
       /bin/chmod --reference=$JAVA_ORIG $JAVA 
    }
 
-} || { 
-   [[ "$1" == "--uninstall" ]] && { 
+elif [[ "$1" == "--uninstall" ]]; then
       sed -i '/JAVA_ORIG=/d' /etc/profile
       sed -i "/PATH=$(echo ${SCRIPT_PATH//\//\\/})/d" /etc/profile
       
@@ -45,8 +44,7 @@ MEMORY_CONF="$SCRIPT_PATH/memoryConfig.sh"
       mv $JAVA_ORIG $JAVA_BIN
       rm -f $JAVA
       rm -f $MEMORY_CONF
-   } || {
+else
       source $MEMORY_CONF
       $JAVA_ORIG "$@"
-   }
-}
+fi
