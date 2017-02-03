@@ -20,13 +20,13 @@
 	"onAfterRedeployContainer": "install",
 	"onUninstall": {
 		"cmd[cp]": [
-			"/bin/bash ${globals.homeDir}/java --uninstall >> /var/log/run.log"
+			"/bin/bash ${globals.homeDir}/java --uninstall >> /var/log/run.log 2>&1"
 		]
 	},
 	"actions": {
 		"install": [{
 			"cmd[cp]": [
-				"while $(pgrep 'apk|apt|yum' 1> /dev/null); do sleep 1; echo waiting... >> /var/log/run.log; done",
+				"while $(pgrep 'apk|apt|yum' 1> /dev/null); do sleep 1; echo waiting... >> /var/log/run.log 2>&1; done",
 				"mkdir -p ${globals.homeDir}",
 				"wget ${globals.baseUrl}/supervisor.sh -O ${globals.homeDir}/java",
 				"wget ${globals.baseUrl}/memoryConfig.sh -O ${globals.homeDir}/memoryConfig.sh",
