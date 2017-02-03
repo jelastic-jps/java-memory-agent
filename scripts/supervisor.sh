@@ -5,7 +5,7 @@ SCRIPT=$(readlink -f "$0")
 # Absolute path this script is in, thus /home/user/bin
 SCRIPT_PATH=$(dirname "$SCRIPT")
 AGENT_DIR="/java_agent"
-JAVA="$AGENT_DIR/java"
+#JAVA="$AGENT_DIR/java"
 MEMORY_CONF="$AGENT_DIR/memoryConfig.sh"
 ENVS_FILE="$AGENT_DIR/envs"
   
@@ -30,19 +30,19 @@ if [[ "$1" == "--install" ]]; then
    echo "export JAVA_ORIG=$JAVA_ORIG" > $ENVS_FILE 
    echo "export JAVA_BIN=$JAVA_BIN" >> $ENVS_FILE 
 
-   sed -i "/PATH=$(echo ${AGENT_DIR//\//\\/})/d" /etc/profile
-   echo "export PATH=$AGENT_DIR:\$PATH" >> /etc/profile
+   #sed -i "/PATH=$(echo ${AGENT_DIR//\//\\/})/d" /etc/profile
+   #echo "export PATH=$AGENT_DIR:\$PATH" >> /etc/profile
  
-   [ $SCRIPT != $JAVA ] && { 
-      mv $SCRIPT $JAVA
-      /bin/chown --reference=$JAVA_ORIG $JAVA
-      /bin/chmod --reference=$JAVA_ORIG $JAVA 
-   }
+   #[ $SCRIPT != $JAVA ] && { 
+   #   mv $SCRIPT $JAVA
+   #   /bin/chown --reference=$JAVA_ORIG $JAVA
+   #   /bin/chmod --reference=$JAVA_ORIG $JAVA 
+   #}
    
    echo "Java memory agent has been installed"
 
 elif [[ "$1" == "--uninstall" ]]; then
-      sed -i "/PATH=$(echo ${AGENT_DIR//\//\\/})/d" /etc/profile
+      #sed -i "/PATH=$(echo ${AGENT_DIR//\//\\/})/d" /etc/profile
       
       source $ENVS_FILE
       rm -f $JAVA_BIN
