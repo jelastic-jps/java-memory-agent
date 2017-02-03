@@ -21,7 +21,8 @@
 	"onUninstall": {
 		"cmd[cp]": [
 			"/bin/bash ${globals.homeDir}/java --uninstall >> /var/log/run.log 2>&1"
-		]
+		],
+        "user": "root"
 	},
 	"actions": {
 		"install": [{
