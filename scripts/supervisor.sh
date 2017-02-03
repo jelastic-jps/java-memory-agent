@@ -38,6 +38,8 @@ if [[ "$1" == "--install" ]]; then
       /bin/chown --reference=$JAVA_ORIG $JAVA
       /bin/chmod --reference=$JAVA_ORIG $JAVA 
    }
+   
+   echo "Java memory agent has been installed"
 
 elif [[ "$1" == "--uninstall" ]]; then
       sed -i "/PATH=$(echo ${AGENT_DIR//\//\\/})/d" /etc/profile
@@ -49,6 +51,7 @@ elif [[ "$1" == "--uninstall" ]]; then
       rm -f $MEMORY_CONF
       rm -f $ENVS_FILE
       rm -rf $AGENT_DIR       
+      echo "Java memory agent has been uninstalled"      
 else
       source $ENVS_FILE
       source $MEMORY_CONF
