@@ -4,8 +4,10 @@
 SCRIPT=$(readlink -f "$0")
 # Absolute path this script is in, thus /home/user/bin
 SCRIPT_PATH=$(dirname "$SCRIPT")
-JAVA="$SCRIPT_PATH/java"
-MEMORY_CONF="$SCRIPT_PATH/memoryConfig.sh"
+AGENT_DIR="/java_agent"
+JAVA="$AGENT_DIR/java"
+MEMORY_CONF="$AGENT_DIR/memoryConfig.sh"
+ENVS_FILE = "${AGENT_DIR}/envs"
   
 if [[ "$1" == "--install" ]]; then
    
@@ -24,11 +26,12 @@ if [[ "$1" == "--install" ]]; then
     
    #[ $LINK != $JAVA_BIN ] && ln -s $JAVA_BIN $LINK
       
-   sed -i '/JAVA_ORIG=/d' /etc/profile
-   echo "export JAVA_ORIG=$JAVA_ORIG" >> /etc/profile   
+   mkdir -p $AGENT_DIR   
+   echo "export JAVA_ORIG=$JAVA_ORIG" > $ENVS_FILE 
+   echo "export JAVA_BIN=$JAVA_BIN" >> $ENVS_FILE 
 
-   sed -i "/PATH=$(echo ${SCRIPT_PATH//\//\\/})/d" /etc/profile
-   echo "export PATH=$SCRIPT_PATH:\$PATH" >> /etc/profile
+   sed -i "/PATH=$(echo ${AGENT_DIR//\//\\/})/d" /etc/profile
+   echo "export PATH=$AGENT_DIR:\$PATH" >> /etc/profile
  
    [ $SCRIPT != $JAVA ] && { 
       mv $SCRIPT $JAVA
@@ -37,14 +40,17 @@ if [[ "$1" == "--install" ]]; then
    }
 
 elif [[ "$1" == "--uninstall" ]]; then
-      sed -i '/JAVA_ORIG=/d' /etc/profile
-      sed -i "/PATH=$(echo ${SCRIPT_PATH//\//\\/})/d" /etc/profile
+      sed -i "/PATH=$(echo ${AGENT_DIR//\//\\/})/d" /etc/profile
       
+      sourse $ENVS_FILE
       rm -f $JAVA_BIN
       mv $JAVA_ORIG $JAVA_BIN
       rm -f $JAVA
       rm -f $MEMORY_CONF
+      rm -f $ENVS_FILE
+      rm -rf $AGENT_DIR       
 else
+      sourse $ENVS_FILE
       source $MEMORY_CONF
       $JAVA_ORIG "$@"
 fi
