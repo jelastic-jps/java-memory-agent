@@ -22,7 +22,7 @@ if [[ "$1" == "--install" ]]; then
    /bin/chown --reference=$JAVA_ORIG $JAVA_BIN
    /bin/chmod --reference=$JAVA_ORIG $JAVA_BIN      
     
-   [ $LINK != $JAVA_BIN ] && ln -s $JAVA_BIN $LINK
+   #[ $LINK != $JAVA_BIN ] && ln -s $JAVA_BIN $LINK
       
    sed -i '/JAVA_ORIG=/d' /etc/profile
    echo "export JAVA_ORIG=$JAVA_ORIG" >> /etc/profile   
