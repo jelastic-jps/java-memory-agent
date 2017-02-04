@@ -11,9 +11,14 @@ ENVS_FILE="$AGENT_DIR/envs"
   
 if [[ "$1" == "--install" ]]; then
    
-   #checking link to java 
-   LINK=$(which java)
-   JAVA_BIN=$(readlink -f $LINK)
+   if [ -z "$JAVA_HOME" ]; then     
+      #checking default link to java 
+      LINK=$(which java)
+      JAVA_BIN=$(readlink -f $LINK)
+   else 
+      [[ $JAVA_HOME != */bin/java ]] && {  JAVA_BIN=$JAVA_HOME"/bin/java"; } || {  JAVA_BIN=$JAVA_HOME; } 
+   fi
+   
    JAVA_ORIG="${JAVA_BIN}.orig"
      
    #moving files around 
