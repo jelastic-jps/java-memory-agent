@@ -10,9 +10,7 @@ MEMORY_CONF="$AGENT_DIR/memoryConfig.sh"
 ENVS_FILE="$AGENT_DIR/envs"
   
 install () {
-   PATH=$1
-   [[ $PATH != */bin/java ]] && {  JAVA_BIN=$PATH"/bin/java"; } || {  JAVA_BIN=$PATH; } 
-   
+   JAVA_BIN=$1
    JAVA_ORIG="${JAVA_BIN}.orig"
    
    if [ -f $JAVA_ORIG ]; then
@@ -31,9 +29,7 @@ install () {
 }
 
 uninstall () {
-   PATH=$1
-   [[ $PATH != */bin/java ]] && {  JAVA_BIN=$PATH"/bin/java"; } || {  JAVA_BIN=$PATH; } 
-   
+   JAVA_BIN=$1
    JAVA_ORIG="${JAVA_BIN}.orig"
    
    if [ -f $JAVA_ORIG ]; then
@@ -57,13 +53,16 @@ if [[ "$1" == "--install" ]] || [[ "$1" == "--uninstall" ]]; then
    else 
       JAVA_BIN=$JAVA_HOME 
    fi
-
-   if [[ "$1" == "--install" ]] ; then
-      install $JAVA_BIN
-   else 
-      uninstall $JAVA_BIN
-   fi
    
+   [[ $JAVA_BIN != */bin/java ]] && {  JAVA_BIN=$JAVA_BIN"/bin/java"; } 
+   
+   FUNC=${1:2}
+   $FUNC $JAVA_BIN
+ 
+   for D in `find /usr/java -maxdepth 3 -mindepth 3 -type f -name "java"`; 
+   do 
+      $FUNC $D; 
+   done
    
    #JAVA_ORIG="${JAVA_BIN}.orig"
      
