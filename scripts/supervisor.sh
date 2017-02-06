@@ -63,30 +63,7 @@ if [[ "$1" == "--install" ]] || [[ "$1" == "--uninstall" ]]; then
    do 
       $FUNC $D; 
    done
-   
-   #JAVA_ORIG="${JAVA_BIN}.orig"
      
-   #moving files around 
-   #mv $JAVA_BIN $JAVA_ORIG 
-   #cp $SCRIPT $JAVA_BIN
-   
-   #/bin/chown --reference=$JAVA_ORIG $JAVA_BIN
-   #/bin/chmod --reference=$JAVA_ORIG $JAVA_BIN      
-         
-   #mkdir -p $AGENT_DIR   
-   #echo "export JAVA_ORIG=$JAVA_ORIG" > $ENVS_FILE 
-   #echo "export JAVA_BIN=$JAVA_BIN" >> $ENVS_FILE 
-
-   #sed -i "/PATH=$(echo ${AGENT_DIR//\//\\/})/d" /etc/profile
-   #echo "export PATH=$AGENT_DIR:\$PATH" >> /etc/profile
- 
-   #[ $SCRIPT != $JAVA ] && { 
-   #   mv $SCRIPT $JAVA
-   #   /bin/chown --reference=$JAVA_ORIG $JAVA
-   #   /bin/chmod --reference=$JAVA_ORIG $JAVA 
-   #}
-   
-   #echo "Java memory agent has been installed"    
 else
       JAVA_ORIG="$SCRIPT.orig"
       source $MEMORY_CONF
