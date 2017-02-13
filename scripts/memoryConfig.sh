@@ -129,5 +129,10 @@ then
 	}
 fi
 
+if ! `echo $ARGS | grep -q "\-server"`
+then
+    	ARGS="-server $ARGS"
+fi
+
 set -- $ARGS
 
