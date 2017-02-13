@@ -19,36 +19,38 @@ function normalize {
 
 ARGS=$@
 
-if ! `echo $ARGS | grep -q "\-Xms[[:digit:]\.]"`
+if ! `echo $ARGS | grep -q "\-Xms[0-9]\+."`
 then
         [ -z "$XMS" ] && { XMS="-Xms$XMS_DEF"; }
         ARGS="$(normalize $XMS -Xms) $ARGS"; 
 fi
 
-if ! `echo $ARGS | grep -q "\-Xmn[[:digit:]\.]"`
+if ! `echo $ARGS | grep -q "\-Xmn[0-9]\+."`
 then
         [ -z "$XMN" ] && { XMN="-Xmn$XMN_DEF"; }
         ARGS="$(normalize $XMN -Xmn) $ARGS"; 
 fi
 
-if ! `echo $ARGS | grep -q "\-Xmx[[:digit:]\.]"`
+if ! `echo $ARGS | grep -q "\-Xmx[0-9]\+."`
 then
         [ -z "$XMX" ] && {
 		[ "$XMX_DEF" == "AUTO" ] && {		
         		#optimal XMX = 80% * total available RAM
         		#it differs a little bit from default values -Xmx http://docs.oracle.com/cd/E13150_01/jrockit_jvm/jrockit/jrdocs/refman/optionX.html
-        		memory_total=`free -m | grep Mem | awk '{print $2}'`;
-        		let XMX=memory_total*8/10;
-        		XMX="-Xmx${XMX}M";
+        		memory_total=`free -m | grep Mem | awk '{print $2}'`
+        		let XMX=memory_total*8/10
+        		XMX="-Xmx${XMX}M"
 		} || {
 			XMX="-Xmx${XMX_DEF}"
 		}
         }
-        ARGS="$(normalize $XMX -Xmx) $ARGS";
+        ARGS="$(normalize $XMX -Xmx) $ARGS"
+else 
+	XMX=`echo $ARGS | grep -o "\-Xmx[0-9]\+."`
 fi
 
-XMX_VALUE=`echo $XMX | grep -o "[0-9]*"`;
-XMX_UNIT=`echo $XMX | sed "s/-Xmx//g" | grep -io "g\|m"`;
+XMX_VALUE=`echo $XMX | grep -o "[0-9]*"`
+XMX_UNIT=`echo $XMX | sed "s/-Xmx//g" | grep -io "g\|m"`
 if [[ $XMX_UNIT == "g" ]] || [[ $XMX_UNIT == "G" ]] ; then 
 	let XMX_VALUE=$XMX_VALUE*1024; 
 fi
