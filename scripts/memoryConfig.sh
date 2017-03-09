@@ -103,6 +103,13 @@ fi
    
 if ! `echo $ARGS | grep -q "UseCompressedOops"`
 then
+	#CompressedOops - compression of pointers in the Java Heap 
+	#UseCompressedClassPointers - compression of pointers in JVM Metadata  
+	#there is a dependency between the two options: UseCompressedOops must be on for UseCompressedClassPointers to be on
+	if ! `echo $ARGS | grep -q "UseCompressedClassPointers"`
+	then
+		ARGS="-XX:+UseCompressedClassPointers $ARGS"
+	fi
     	ARGS="-XX:+UseCompressedOops $ARGS"
 fi
 
