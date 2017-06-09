@@ -2,6 +2,8 @@
 
 #defaults
 XMX_DEF="AUTO"
+#if auto then set XMX = 80% * total available RAM
+XMX_DEF_PERCENT="80"
 XMS_DEF="32M"
 XMN_DEF="30M"
 XMINF_DEF="0.1"
@@ -35,10 +37,15 @@ if ! `echo $ARGS | grep -q "\-Xmx[0-9]\+."`
 then
         [ -z "$XMX" ] && {
 		[ "$XMX_DEF" == "AUTO" ] && {		
-        		#optimal XMX = 80% * total available RAM
-        		#it differs a little bit from default values -Xmx http://docs.oracle.com/cd/E13150_01/jrockit_jvm/jrockit/jrdocs/refman/optionX.html
         		memory_total=`free -m | grep Mem | awk '{print $2}'`
-        		let XMX=memory_total*8/10
+			
+			#checking cgroup memory limit in container https://goo.gl/gnF8m9
+			CGROUP_MEMORY_LIMIT="/sys/fs/cgroup/memory/memory.limit_in_bytes"
+			if [ -f $CGROUP_MEMORY_LIMIT ]; then
+			   memory_total=$((`cat $CGROUP_MEMORY_LIMIT`/1024/1024))
+			fi   
+			
+        		let XMX=memory_total*XMX_DEF_PERCENT/100
         		XMX="-Xmx${XMX}M"
 		} || {
 			XMX="-Xmx${XMX_DEF}"
