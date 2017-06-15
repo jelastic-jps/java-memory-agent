@@ -42,7 +42,9 @@ then
 			#checking cgroup memory limit in container https://goo.gl/gnF8m9
 			CGROUP_MEMORY_LIMIT="/sys/fs/cgroup/memory/memory.limit_in_bytes"
 			if [ -f $CGROUP_MEMORY_LIMIT ]; then
-			   memory_total=$((`cat $CGROUP_MEMORY_LIMIT`/1024/1024))
+			   cgroup_limit=$((`cat $CGROUP_MEMORY_LIMIT`/1024/1024))
+			   #choosing the smaller value
+			   memory_total=$(( memory_total < cgroup_limit ? memory_total : cgroup_limit ))
 			fi   
 			
         		let XMX=memory_total*XMX_DEF_PERCENT/100
