@@ -42,6 +42,6 @@
 		}]
 	},
 	"success": {
-		"text": "Done!"
+		"text": "Successfully installed!"
 	}
 }
