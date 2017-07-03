@@ -7,7 +7,7 @@
 		"apps/dev-and-admin-tools"
 	],
 	"targetNodes": {
-		nodeGroup: "*"
+		"nodeGroup": "*"
 	},
 	"version": "1.1",
 	"homepage": "https://github.com/jelastic-jps/java-memory-agent/",
