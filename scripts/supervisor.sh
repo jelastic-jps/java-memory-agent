@@ -6,9 +6,10 @@ SCRIPT=$(readlink -f "$0")
 SCRIPT_PATH=$(dirname "$SCRIPT")
 AGENT_DIR="/java_agent"
 #JAVA="$AGENT_DIR/java"
+VARIABLES_CONF="$AGENT_DIR/variablesparser.sh"
 MEMORY_CONF="$AGENT_DIR/memoryConfig.sh"
 ENVS_FILE="$AGENT_DIR/envs"
-  
+
 install () {
    JAVA_BIN=$1
    JAVA_ORIG="${JAVA_BIN}.orig"
@@ -66,6 +67,7 @@ if [[ "$1" == "--install" ]] || [[ "$1" == "--uninstall" ]]; then
      
 else
       JAVA_ORIG="$SCRIPT.orig"
+      [ -f "$VARIABLES_CONF" ] && source $VARIABLES_CONF
       source $MEMORY_CONF
       $JAVA_ORIG "$@"
 fi
