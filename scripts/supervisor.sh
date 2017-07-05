@@ -60,7 +60,7 @@ if [[ "$1" == "--install" ]] || [[ "$1" == "--uninstall" ]]; then
    FUNC=${1:2}
    $FUNC $JAVA_BIN
  
-   for D in `find /usr/java -maxdepth 3 -mindepth 3 -type f -name "java"`; 
+   for D in `find /usr/{java,lib} -maxdepth 5 -mindepth 3 -type f -name "java"`; 
    do 
       $FUNC $D; 
    done
