@@ -25,7 +25,7 @@
 		"cmd": [
 			"/bin/bash ${globals.homeDir}/java --uninstall >> /var/log/run.log 2>&1"
 		],
-		"nodeType": "${targetNodes[0].nodeType}",		
+		"nodeGroup" : "${targetNodes.nodeGroup}",		
         	"user": "root"
 	},
 	"actions": {
@@ -42,7 +42,7 @@
 			"user": "root"
 		}, {
 			"restartContainers": {
-				"nodeType": "${targetNodes[0].nodeType}"
+				"nodeGroup" : "${targetNodes.nodeGroup}"
 			}
 		}]
 	},
