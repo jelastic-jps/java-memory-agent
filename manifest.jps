@@ -38,7 +38,7 @@
 				"wget ${globals.baseUrl}/../lib/jelastic-gc-agent.jar -O ${globals.homeDir}/jelastic-gc-agent.jar",
 				"/bin/bash ${globals.homeDir}/java --install >> /var/log/run.log"
 			],
-			"nodeType": "${targetNodes[0].nodeType}",
+			"nodeGroup" : "${targetNodes.nodeGroup}",		
 			"user": "root"
 		}, {
 			"restartContainers": {
