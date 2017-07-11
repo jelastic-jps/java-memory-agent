@@ -42,7 +42,7 @@
 			"user": "root"
 		}, {
 			"restartContainers": {
-				"nodeGroup": "cp"
+				nodeType": "${targetNodes[0].nodeType}"
 			}
 		}]
 	},
