@@ -2,7 +2,7 @@
 	"jpsVersion": "0.99",
 	"jpsType": "update",
 	"id": "java-vertical-scaling",
-	"name": "Java Memory Vertical Scaling",
+	"name": "Java Memory Agent",
 	"categories": [
 		"apps/dev-and-admin-tools"
 	],
@@ -12,8 +12,8 @@
 	"version": "1.1",
 	"homepage": "https://github.com/jelastic-jps/java-memory-agent/",
 	"description": {
-		"text": "Java Memory Vertical Scaling",
-		"short": "Java Memory Vertical Scaling"
+		"text": "Java Memory Agent is an applicable add-on to optimize Java-run containers in confines of RAM usage. It adjusts the main JVM memory settings based on the amount of resources, allocated to a node, and integrates Garbage Collector to release unused RAM.<div class='warning-lower' style='color:#b7c3da'><b>Note:</b> This add-on is not required for Jelastic-managed Java containers, as they are optimized in a similar way by default.</div>",
+		"short": "Java Memory Agent for container RAM usage optimization"
 	},
 	"globals": {
 		"baseUrl": "https://raw.githubusercontent.com/jelastic-jps/java-memory-agent/master/scripts",
@@ -47,6 +47,6 @@
 		}]
 	},
 	"success": {
-		"text": "Successfully installed!"
+		"text": "Your Java container(s) RAM usage has been successfully optimized!"
 	}
 }
