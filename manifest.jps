@@ -13,7 +13,7 @@
 	"homepage": "https://github.com/jelastic-jps/java-memory-agent/",
 	"logo": "https://raw.githubusercontent.com/jelastic-jps/java-memory-agent/master/images/java-agent-small-logo.png",
 	"description": {
-		"text": "Java Memory Agent is an applicable add-on to optimize Java-run containers in confines of RAM usage. It adjusts the main JVM memory settings based on the amount of resources, allocated to a node, and integrates Garbage Collector to release unused RAM.<div class='warning-lower' style='color:#b7c3da'><b>Note:</b> This add-on is not required for Jelastic-managed Java containers, as they are optimized in a similar way by default.</div>",
+		"text": "Java Memory Agent is an applicable add-on to optimize Java-run containers in confines of RAM usage. It adjusts the main JVM memory settings based on the amount of allocated resources and integrates Garbage Collector to release the unused RAM.<div class='warning-lower' style='color:#b7c3da'><b>Note:</b> Jelastic-managed Java stacks are optimized in a similar way out-of-box.</div>",
 		"short": "Java Memory Agent for container RAM usage optimization"
 	},
 	"globals": {
