@@ -14,11 +14,12 @@ To learn more about [Jelastic Add-ons](https://github.com/jelastic-jps/jpswiki/w
 
 ## Java Memory Agent Add-On Specific
 
-To implement the required configurations, the Java Memory Agent creates an interceptor in front of the application main method, which enables it to re-define the running classes’ content on a bytecode level. The two main changes this add-on applies upon installation are:
-* adjustment of the most essential Java parameters according to a dedicated [configuration script](https://github.com/jelastic-jps/java-memory-agent/blob/master/scripts/memoryConfig.sh)
-* integration of the [Garbage Collector](https://docs.jelastic.com/garbage-collector-overview) service to avoid processes’ memory leak (i.e. to prevent OOM issues’ occurrence and vain use of container resources)
+To implement the required configurations, the following changes are applied by this add-on upon installation:
+* _**[supervisor.sh](https://github.com/jelastic-jps/java-memory-agent/blob/master/scripts/supervisor.sh)**_ - intercepts _java_ command on a shell level to analyze and substitute default start options with optimized ones
+* _**[memoryConfig.sh](https://github.com/jelastic-jps/java-memory-agent/blob/master/scripts/memoryConfig.sh)**_ - adjusts the most essential Java parameters, like: _-Xmx_, _-Xms_, _-Xmn_, _-Xmaxf_, _-Xminf_, _-XX:MaxPermSize_ and GC type; herewith, parameters defined via environment variables won’t be changed
+* _**[javaagent](https://github.com/jelastic-jps/java-memory-agent/tree/master/lib)**_ - integrates the [Garbage Collector](https://docs.jelastic.com/garbage-collector-overview) service and performs periodical full GC calls to avoid processes’ memory leak (i.e. prevents OOM issues’ occurrence and vain use of container resources)
 
-In addition, the Java Memory Agent by Jelastic considers all the specific issues of [Java hosting within containers](http://blog.jelastic.com/2017/04/13/java-ram-usage-in-containers-top-5-tips-not-to-lose-your-memory/), improving performance of your application in general.
+In addition, the Java Memory Agent by Jelastic considers all the specific issues of [Java hosting within containers](http://blog.jelastic.com/2017/04/13/java-ram-usage-in-containers-top-5-tips-not-to-lose-your-memory/) (e.g. incorrect memory limits determination, native non-heap memory usage, RAM adjustment on a fly, etc.). This allows to improve stability and reliability of your application in general.
 
 > **Note:** Upon add-on installation, the corresponding server should be restarted with new parameters, which will cause a brief downtime of the service it runs.
 > 
