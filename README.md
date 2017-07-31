@@ -25,7 +25,7 @@ In addition, the Java Memory Agent by Jelastic considers all the specific issues
 > 
 > In order to avoid this, consider to [increase the number of instances](https://docs.jelastic.com/multi-nodes) within a target environment layer so that the required changes could be applied sequentially, by restarting them one-by-one.
 
-Herewith, the originally used application parameters are automatically backed up and could be easily restored with a simple add-on removal, if needed (see the details within the dedicated section below)
+Herewith, the originally used application parameters are automatically backed up and could be easily restored with a simple add-on removal, if needed (see the details within the dedicated section below).
 
 ## How to Install Java Memory Agent to Jelastic Environment
 
