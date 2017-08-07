@@ -29,7 +29,7 @@ Herewith, the originally used application parameters are automatically backed up
 
 ## How to Install Java Memory Agent to Jelastic Environment
 
-The **Java Memory Agent** add-on can be applied to the required server by [importing](https://docs.jelastic.com/environment-import) the _**manifest.jps**_ file above or directly from the **Add-ons** section of [Jelastic Marketplace](https://docs.jelastic.com/marketplace).
+The **Java Memory Agent** add-on can be applied to the required server by [importing](https://docs.jelastic.com/environment-import) the _**manifest.jps**_ file above.
 
 ![java-agent-installation](images/java-agent-installation.png)
 
