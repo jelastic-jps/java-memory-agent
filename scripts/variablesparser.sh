@@ -1,6 +1,5 @@
 #!/bin/bash
-# TODO: fix for other
-CONFFILE="${STACK_PATH}/glassfish/domains/domain1/config/variables.conf"
+CONFFILE="${JAVA_OPTS_CONFFILE}"
 confresult=""
 
 if [ -f "$CONFFILE" ]; then
