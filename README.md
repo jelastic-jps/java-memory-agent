@@ -1,4 +1,4 @@
-![java-agent-logo](images/java-agent-logo.png)
+<img src="images/java-agent-logo.png" width="100" alt="java-memory-agent" />
 
 # Java Memory Agent Add-On
 
