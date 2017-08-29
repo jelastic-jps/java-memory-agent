@@ -25,4 +25,4 @@ fi
 [ -z "$XMINF" ] || export XMINF
 [ -z "$XMAXF" ] || export XMAXF
 [ -z "$MAXPERMSIZE" ] || export MAXPERMSIZE
-[ -z "$confresult" ] || set -- $@ $confresult
+[ -z "$confresult" ] || set -- $confresult $@

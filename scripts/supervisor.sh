@@ -69,5 +69,5 @@ else
       JAVA_ORIG="$SCRIPT.orig"
       [ -f "$VARIABLES_CONF" ] && source $VARIABLES_CONF
       source $MEMORY_CONF
-      $JAVA_ORIG "$@"
+      exec $JAVA_ORIG "$@"
 fi

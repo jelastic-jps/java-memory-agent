@@ -136,7 +136,7 @@ then
 	fi 
 fi
 
-if ! `echo $ARGS | grep -q "\-javaagent\:[^ ]*jelastic\-gc\-agent\.jar"`
+if ! echo ${ARGS[@]} | grep -q "\-javaagent\:[^ ]*jelastic\-gc\-agent\.jar"
 then	
 	[ "$VERT_SCALING" != "false" -a "$VERT_SCALING" != "0" ] && {
 		[ -z "$AGENT_DIR" ] && AGENT_DIR=$(dirname $(readlink -f "$0"))
