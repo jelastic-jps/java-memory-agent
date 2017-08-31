@@ -21,19 +21,19 @@ function normalize {
 
 ARGS=("$@")
 
-if ! `echo $ARGS | grep -q "\-Xms[0-9]\+."`
+if ! echo ${ARGS[@]} | grep -q "\-Xms[0-9]\+."
 then
         [ -z "$XMS" ] && { XMS="-Xms$XMS_DEF"; }
         ARGS=("$(normalize $XMS -Xms)" "${ARGS[@]}"); 
 fi
 
-if ! `echo $ARGS | grep -q "\-Xmn[0-9]\+."`
+if ! echo ${ARGS[@]} | grep -q "\-Xmn[0-9]\+."
 then
         [ -z "$XMN" ] && { XMN="-Xmn$XMN_DEF"; }
         ARGS=("$(normalize $XMN -Xmn)" "${ARGS[@]}"); 
 fi
 
-if ! `echo $ARGS | grep -q "\-Xmx[0-9]\+."`
+if ! echo ${ARGS[@]} | grep -q "\-Xmx[0-9]\+."
 then
         [ -z "$XMX" ] && {
 		[ "$XMX_DEF" == "AUTO" ] && {		
@@ -64,13 +64,13 @@ if [[ $XMX_UNIT == "g" ]] || [[ $XMX_UNIT == "G" ]] ; then
 	let XMX_VALUE=$XMX_VALUE*1024; 
 fi
 
-if ! `echo $ARGS | grep -q "\-Xminf[[:digit:]\.]"`
+if ! echo ${ARGS[@]} | grep -q "\-Xminf[[:digit:]\.]"
 then
         [ -z "$XMINF" ] && { XMINF="-Xminf$XMINF_DEF"; }
         ARGS=("$(normalize $XMINF -Xminf)" "${ARGS[@]}"); 
 fi
 
-if ! `echo $ARGS | grep -q "\-Xmaxf[[:digit:]\.]"`
+if ! echo ${ARGS[@]} | grep -q "\-Xmaxf[[:digit:]\.]"
 then
         [ -z "$XMAXF" ] && { XMAXF="-Xmaxf$XMAXF_DEF"; }
         ARGS=("$(normalize $XMAXF -Xmaxf)" "${ARGS[@]}"); 
@@ -83,7 +83,7 @@ JAVA_MINOR_VERSION=$(echo $JAVA_VERSION |  awk -F '[._-]' '{print $3}')
 JAVA_UPDATE_VERSION=$(echo $JAVA_VERSION |  awk -F '[._-]' '{print $4}')
 
 #checking the need of MaxPermSize param 
-if ! `echo $ARGS | grep -q "\-XX:MaxPermSize"`
+if ! echo ${ARGS[@]} | grep -q "\-XX:MaxPermSize"
 then
         [ -z "$MAXPERMSIZE" ] && { 
         	#if java version <= 7 then configure MaxPermSize otherwise ignore 
@@ -98,7 +98,7 @@ then
 #        ARGS=($MAXPERMSIZE "${ARGS[@]}"); 
 fi
  
-if ! `echo $ARGS | grep -q "\-XX:+Use.*GC"`
+if ! echo ${ARGS[@]} | grep -q "\-XX:+Use.*GC"
 then	
 	[ -z "$GC" ] && {  
         	[ $JAVA_MAJOR_VERSION -le 7 ] && {
@@ -124,7 +124,7 @@ fi
 #fi
 
 #enabling string deduplication feature https://blogs.oracle.com/java-platform-group/entry/g1_from_garbage_collector_to
-if ! `echo $ARGS | grep -q "UseStringDeduplication"`
+if ! echo ${ARGS[@]} | grep -q "UseStringDeduplication"
 then
 	if  `echo $ARGS | grep -q "\-XX:+UseG1GC"`
 	then
@@ -146,7 +146,7 @@ then
 	}
 fi
 
-if ! `echo $ARGS | grep -q "\-server"`
+if ! echo ${ARGS[@]} | grep -q "\-server"
 then
     	ARGS=("-server" "${ARGS[@]}"); 
 fi
