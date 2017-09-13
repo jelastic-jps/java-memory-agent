@@ -55,7 +55,7 @@ then
         }
         ARGS=("$(normalize $XMX -Xmx)" "${ARGS[@]}"); 
 else 
-	XMX=`echo $ARGS | grep -o "\-Xmx[0-9]\+."`
+	XMX=`echo ${ARGS[@]} | grep -o "\-Xmx[0-9]\+."`
 fi
 
 XMX_VALUE=`echo $XMX | grep -o "[0-9]*"`
