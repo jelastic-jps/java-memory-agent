@@ -95,7 +95,7 @@ then
                 	}
 		}
   	}
-#        ARGS=($MAXPERMSIZE "${ARGS[@]}"); 
+        ARGS=($MAXPERMSIZE "${ARGS[@]}"); 
 fi
  
 if ! echo ${ARGS[@]} | grep -q "\-XX:+Use.*GC"
