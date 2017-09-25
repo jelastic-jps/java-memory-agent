@@ -1,4 +1,8 @@
 #!/bin/bash
+[ -z "${JAVA_OPTS_CONFFILE}" ] && {
+ [ -f "/.jelenv" ] && { grep -qE '^\s*JAVA_OPTS_CONFFILE=' /.jelenv && export $(grep -E '^\s*JAVA_OPTS_CONFFILE=' /.jelenv); }
+}
+
 CONFFILE="${JAVA_OPTS_CONFFILE}"
 confresult=""
 
@@ -25,4 +29,4 @@ fi
 [ -z "$XMINF" ] || export XMINF
 [ -z "$XMAXF" ] || export XMAXF
 [ -z "$MAXPERMSIZE" ] || export MAXPERMSIZE
-[ -z "$confresult" ] || set -- $confresult $@
+[ -z "$confresult" ] || set -- $confresult "$@"
