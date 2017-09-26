@@ -81,7 +81,15 @@ JAVA_VERSION=${JAVA_VERSION//\"/}
 JAVA_MAJOR_VERSION=$(echo $JAVA_VERSION |  awk -F '[._-]' '{print $2}')
 JAVA_MINOR_VERSION=$(echo $JAVA_VERSION |  awk -F '[._-]' '{print $3}')
 JAVA_UPDATE_VERSION=$(echo $JAVA_VERSION |  awk -F '[._-]' '{print $4}')
+#temporary fix for j9
+[[ -z "$JAVA_MAJOR_VERSION" && -z "$JAVA_MINOR_VERSION" && -z "$JAVA_UPDATE_VERSION" ]] && grep -q 9 <<< $JAVA_VERSION && {
+	JAVA_MAJOR_VERSION=9
+	JAVA_MINOR_VERSION=0
+	JAVA_UPDATE_VERSION=0
+}
 
+
+ 
 #checking the need of MaxPermSize param 
 if ! echo ${ARGS[@]} | grep -q "\-XX:MaxPermSize"
 then
