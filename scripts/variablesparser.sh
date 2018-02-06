@@ -18,7 +18,7 @@ if [ -f "$CONFFILE" ]; then
         elif $(grep -qiE '\-Xmaxf[[:digit:]\.]{1,}$' <<< $i); then XMAXF="${i}";
         elif $(grep -qiE '\-XX:MaxPermSize=[[:digit:]\.]{1,}[mgkMGK]$' <<<  $i); then MAXPERMSIZE="${i}";
         else
-            confresult=$(echo " $confresult" " $i" | sed -e 's/&/\\&/g' -e 's/;/\\;/g' -e "s/?/\\?/g" -e "s/*/\\*/g" -e "s/(/\\(/g" -e "s/)/\\)/g")
+            confresult=" $confresult $i"
         fi
     done
 fi
