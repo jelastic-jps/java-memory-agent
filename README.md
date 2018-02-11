@@ -50,3 +50,9 @@ Upon installation, the Java Memory Agent add-on automatically preserves the prev
 ![java-agent-uninstall](images/java-agent-uninstall.png)
 
 For that, click on the **Add-ons** button next to the corresponding environment layer to open the same-named tab and select the **Uninstall** option within the _Java Memory Agent_ plank menu.
+
+## Related Articles
+
+* [5 Steps to Stop Overpaying for Java Cloud Hosting](https://jelastic.com/blog/stop-overpaying-for-java-cloud-hosting-resources/)
+* [Garbage Collector Tuning - Java Memory Usage Optimization](https://jelastic.com/blog/tuning-garbage-collector-java-memory-usage-optimization/)
+* [Java RAM Usage in Containers: Top 5 Tips Not to Lose Your Memory](https://jelastic.com/blog/java-ram-usage-in-containers-top-5-tips-not-to-lose-your-memory/)
