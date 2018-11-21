@@ -78,7 +78,7 @@ fi
 
 JAVA_VERSION=$(${JAVA_ORIG:-java} -version 2>&1 | grep version)
 JAVA_VERSION=${JAVA_VERSION//\"/}
-[ $(echo $JAVA_VERSION | awk '{ print $3 }'  | awk -F '[._-]' '{print $1}') -eq 9 ] && {
+[ $(echo $JAVA_VERSION | awk '{ print $3 }'  | awk -F '[._-]' '{print $1}') -ge 9 ] && {
     JAVA_VERSION=$(echo $JAVA_VERSION | awk '{print $3}')
     JAVA_MAJOR_VERSION=$(echo $JAVA_VERSION |  awk -F '[._-]' '{print $1}');
     JAVA_MINOR_VERSION=$(echo $JAVA_VERSION |  awk -F '[._-]' '{print $2}');
