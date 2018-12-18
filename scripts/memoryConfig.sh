@@ -12,7 +12,9 @@ GC_DEF=${GC_DEF:-G1GC}
 G1_J7_MIN_RAM_THRESHOLD=8000
 FULL_GC_PERIOD=${FULL_GC_PERIOD:-300}
 FULL_GC_AGENT_DEBUG=${FULL_GC_AGENT_DEBUG:-0}
-	
+G1PERIODIC_GC_INTERVAL_DEF=${G1PERIODIC_GC_INTERVAL_DEF:-900000}
+G1PERIODIC_GC_SYS_LOAD_THRESHOLD_DEF=${G1PERIODIC_GC_SYS_LOAD_THRESHOLD_DEF:-15}
+
 function normalize {
   var="$(echo ${1} | tr '[A-Z]' '[a-z]')"
   prefix="$(echo ${2} | tr '[A-Z]' '[a-z]')"
@@ -143,15 +145,24 @@ then
 	fi 
 fi
 
-if ! echo ${ARGS[@]} | grep -q "\-javaagent\:[^ ]*jelastic\-gc\-agent\.jar"
-then	
-	[ "$VERT_SCALING" != "false" -a "$VERT_SCALING" != "0" ] && {
+[ "$VERT_SCALING" != "false" -a "$VERT_SCALING" != "0" ] && {
+    if [[ $JAVA_MAJOR_VERSION -ge 12 ]]; then
+	if ! echo ${ARGS[@]} | grep -q "G1PeriodicGCInterval"; then
+		ARGS=("-XX:G1PeriodicGCInterval=${G1PERIODIC_GC_INTERVAL_DEF}" "${ARGS[@]}");
+	fi
+	if ! echo ${ARGS[@]} | grep -q "G1PeriodicGCSystemLoadThreshold"; then
+		ARGS=("-XX:G1PeriodicGCSystemLoadThreshold=${G1PERIODIC_GC_SYS_LOAD_THRESHOLD_DEF}" "${ARGS[@]}");
+	fi
+    else
+	if ! echo ${ARGS[@]} | grep -q "\-javaagent\:[^ ]*jelastic\-gc\-agent\.jar"
+	then
 		[ -z "$AGENT_DIR" ] && AGENT_DIR=$(dirname $(readlink -f "$0"))
 		AGENT="$AGENT_DIR/jelastic-gc-agent.jar"
 		[ ! -f $AGENT ] && AGENT="$AGENT_DIR/lib/jelastic-gc-agent.jar"
 		ARGS=("-javaagent:$AGENT=period=$FULL_GC_PERIOD,debug=$FULL_GC_AGENT_DEBUG" "${ARGS[@]}"); 
-	}
-fi
+	fi
+    fi
+}
 
 if ! echo ${ARGS[@]} | grep -q "\-server"
 then
