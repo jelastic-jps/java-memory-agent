@@ -17,8 +17,8 @@ CPU_COUNT=${CPU_COUNT:-1}
 GC_SYS_LOAD_THRESHOLD_RATE=${GC_SYS_LOAD_THRESHOLD_RATE:-0.3}
 G1PERIODIC_LT_DEF=$(echo $CPU_COUNT*$GC_SYS_LOAD_THRESHOLD_RATE | bc 2>/dev/null | sed 's/^\./0./')
 G1PERIODIC_LT_DEF=${G1PERIODIC_LT_DEF:-0.3}
-G1PERIODIC_GC_INTERVAL_DEF=${G1PERIODIC_GC_INTERVAL_DEF:-900k}
-G1PERIODIC_GC_SYS_LOAD_THRESHOLD_DEF=${G1PERIODIC_GC_SYS_LOAD_THRESHOLD_DEF:-${G1PERIODIC_LT_DEF}}
+G1PERIODIC_GC_INTERVAL=${G1PERIODIC_GC_INTERVAL:-900k}
+G1PERIODIC_GC_SYS_LOAD_THRESHOLD=${G1PERIODIC_GC_SYS_LOAD_THRESHOLD:-${G1PERIODIC_LT_DEF}}
 
 function normalize {
   var="$(echo ${1} | tr '[A-Z]' '[a-z]')"
@@ -153,10 +153,10 @@ fi
 [ "$VERT_SCALING" != "false" -a "$VERT_SCALING" != "0" ] && {
     if [[ $JAVA_MAJOR_VERSION -ge 12 ]]; then
 	if ! echo ${ARGS[@]} | grep -q "G1PeriodicGCInterval"; then
-		ARGS=("-XX:G1PeriodicGCInterval=${G1PERIODIC_GC_INTERVAL_DEF}" "${ARGS[@]}");
+		ARGS=("-XX:G1PeriodicGCInterval=${G1PERIODIC_GC_INTERVAL}" "${ARGS[@]}");
 	fi
 	if ! echo ${ARGS[@]} | grep -q "G1PeriodicGCSystemLoadThreshold"; then
-		ARGS=("-XX:G1PeriodicGCSystemLoadThreshold=${G1PERIODIC_GC_SYS_LOAD_THRESHOLD_DEF}" "${ARGS[@]}");
+		ARGS=("-XX:G1PeriodicGCSystemLoadThreshold=${G1PERIODIC_GC_SYS_LOAD_THRESHOLD}" "${ARGS[@]}");
 	fi
     else
 	if ! echo ${ARGS[@]} | grep -q "\-javaagent\:[^ ]*jelastic\-gc\-agent\.jar"
