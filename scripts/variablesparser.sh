@@ -9,7 +9,7 @@ declare -a confresult=()
 if [ -f "$CONFFILE" ]; then
 	OLD_IFS="$IFS"
 	IFS=$'\n'
-	val=($(cat "$CONFFILE" | grep -v '#' | grep -v -vE '^\s*$' | sed -re "s/('|\") /'\n/g" -e "/(\"|')/! s/\s/\n/g" -e 's/(\s)(-.*=\")/\n\2/'))
+	val=($(cat "$CONFFILE" | grep -vE '^\s*#' | grep -v -vE '^\s*$' | sed -re "s/('|\") /'\n/g" -e "/(\"|')/! s/\s/\n/g" -e 's/(\s)(-.*=\")/\n\2/'))
 	IFS="$OLD_IFS"
 
 	for i in "${val[@]}"
