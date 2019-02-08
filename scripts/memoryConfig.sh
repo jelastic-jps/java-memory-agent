@@ -83,7 +83,7 @@ then
         ARGS=("$(normalize $XMAXF -Xmaxf)" "${ARGS[@]}"); 
 fi
 
-JAVA_VERSION=$(${JAVA_ORIG:-java} -version 2>&1 | grep version)
+JAVA_VERSION=$( env -i ${JAVA_ORIG:-java} -version 2>&1 | grep version)
 JAVA_VERSION=${JAVA_VERSION//\"/}
 [ $(echo $JAVA_VERSION | awk '{ print $3 }'  | awk -F '[._-]' '{print $1}') -ge 9 ] && {
     JAVA_VERSION=$(echo $JAVA_VERSION | awk '{print $3}')
@@ -156,7 +156,7 @@ fi
 		ARGS=("-XX:G1PeriodicGCInterval=${G1PERIODIC_GC_INTERVAL}" "${ARGS[@]}");
 	fi
 	if ! echo ${ARGS[@]} | grep -q "G1PeriodicGCSystemLoadThreshold"; then
-		ARGS=("-XX:G1PeriodicGCSystemLoadThreshold=${G1PERIODIC_GC_SYS_LOAD_THRESHOLD}" "${ARGS[@]}");
+		ARGS=("-XX:G1PeriodicGCSystemLoadThreshold=${G1PERIODIC_GC_SYS_LOAD_THRESHOLDB}" "${ARGS[@]}");
 	fi
     else
 	if ! echo ${ARGS[@]} | grep -q "\-javaagent\:[^ ]*jelastic\-gc\-agent\.jar"
