@@ -169,6 +169,13 @@ fi
     fi
 }
 
+[ "x${UNLOCK_EXPERIMENTAL,,}" != "xfalse" -a "x$UNLOCK_EXPERIMENTAL" != "x0" ] && {
+    if ! echo ${ARGS[@]} | grep -q "\-XX:+UnlockExperimentalVMOptions"
+    then
+        ARGS=("-XX:+UnlockExperimentalVMOptions" "${ARGS[@]}"); 
+    fi
+}
+
 if ! echo ${ARGS[@]} | grep -q "\-server"
 then
     	ARGS=("-server" "${ARGS[@]}"); 
