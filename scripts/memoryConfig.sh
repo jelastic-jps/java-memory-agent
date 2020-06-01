@@ -19,6 +19,8 @@ G1PERIODIC_LT_DEF=$(echo $CPU_COUNT*$GC_SYS_LOAD_THRESHOLD_RATE | bc 2>/dev/null
 G1PERIODIC_LT_DEF=${G1PERIODIC_LT_DEF:-0.3}
 G1PERIODIC_GC_INTERVAL=${G1PERIODIC_GC_INTERVAL:-900k}
 G1PERIODIC_GC_SYS_LOAD_THRESHOLD=${G1PERIODIC_GC_SYS_LOAD_THRESHOLD:-${G1PERIODIC_LT_DEF}}
+AGENT_OPTIONS=(-XX:+IdleTuningCompactOnIdle -XX:+IdleTuningGcOnIdle -XX:IdleTuningMinIdleWaitTime=180 -Xjit:waitTimeToEnterDeepIdleMode=50000)
+ADD_J_AGENT=true
 
 function normalize {
   var="$(echo ${1} | tr '[A-Z]' '[a-z]')"
@@ -61,7 +63,7 @@ then
 		}
         }
         ARGS=("$(normalize $XMX -Xmx)" "${ARGS[@]}"); 
-else 
+else
 	XMX=`echo ${ARGS[@]} | grep -o "\-Xmx[0-9]\+."`
 fi
 
@@ -83,9 +85,10 @@ then
         ARGS=("$(normalize $XMAXF -Xmaxf)" "${ARGS[@]}"); 
 fi
 
-JAVA_VERSION=$( env -i ${JAVA_ORIG:-java} -version 2>&1 | grep version)
+JAVA_STRING=$( env -i ${JAVA_ORIG:-java} -version 2>&1 )
+JAVA_VERSION=$( grep version <<< "$JAVA_STRING" )
 JAVA_VERSION=${JAVA_VERSION//\"/}
-[ $(echo $JAVA_VERSION | awk '{ print $3 }'  | awk -F '[._-]' '{print $1}') -ge 9 ] && {
+[[ $(echo $JAVA_VERSION | awk '{ print $3 }'  | awk -F '[._-]' '{print $1}') -ge 9 ]] && {
     JAVA_VERSION=$(echo $JAVA_VERSION | awk '{print $3}')
     JAVA_MAJOR_VERSION=$(echo $JAVA_VERSION |  awk -F '[._-]' '{print $1}');
     JAVA_MINOR_VERSION=$(echo $JAVA_VERSION |  awk -F '[._-]' '{print $2}');
@@ -95,16 +98,18 @@ JAVA_VERSION=${JAVA_VERSION//\"/}
     JAVA_MINOR_VERSION=$(echo $JAVA_VERSION |  awk -F '[._-]' '{print $3}');
     JAVA_UPDATE_VERSION=$(echo $JAVA_VERSION |  awk -F '[._-]' '{print $4}');
 }
- 
+
+grep -qE 'OpenJ9' <<< "$JAVA_STRING" && ADD_J_AGENT=false
+
 #checking the need of MaxPermSize param 
 if ! echo ${ARGS[@]} | grep -q "\-XX:MaxPermSize"
 then
-        [ -z "$MAXPERMSIZE" ] && { 
+        [[ -z "$MAXPERMSIZE" ]] && { 
         	#if java version <= 7 then configure MaxPermSize otherwise ignore 
-        	[ $JAVA_MAJOR_VERSION -le 7 ] && {
+        	[[ $JAVA_MAJOR_VERSION -le 7 ]] && {
 			let MAXPERMSIZE_VALUE=$XMX_VALUE/10; 
-        		[ $MAXPERMSIZE_VALUE -ge 64 ] && {
-				[ $MAXPERMSIZE_VALUE -gt 256 ] && { MAXPERMSIZE_VALUE=256; }
+        		[[ $MAXPERMSIZE_VALUE -ge 64 ]] && {
+				[[ $MAXPERMSIZE_VALUE -gt 256 ]] && { MAXPERMSIZE_VALUE=256; }
 				MAXPERMSIZE="-XX:MaxPermSize=${MAXPERMSIZE_VALUE}M";
                 	}
 		}
@@ -114,9 +119,9 @@ fi
  
 if ! echo ${ARGS[@]} | grep -q "\-XX:+Use.*GC"
 then	
-	[ -z "$GC" ] && {  
-        	[ $JAVA_MAJOR_VERSION -le 7 ] && {
-	    		[ "$XMX_VALUE" -ge "$G1_J7_MIN_RAM_THRESHOLD" ] && GC="-XX:+UseG1GC" || GC="-XX:+UseParNewGC";
+	[[ -z "$GC" ]] && {
+        	[[ $JAVA_MAJOR_VERSION -le 7 ]] && {
+	    		[[ "$XMX_VALUE" -ge "$G1_J7_MIN_RAM_THRESHOLD" ]] && GC="-XX:+UseG1GC" || GC="-XX:+UseParNewGC";
 	    	} || {
 	    		GC="-XX:+Use$GC_DEF";
 	    	}
@@ -159,12 +164,18 @@ fi
 		ARGS=("-XX:G1PeriodicGCSystemLoadThreshold=${G1PERIODIC_GC_SYS_LOAD_THRESHOLD}" "${ARGS[@]}");
 	fi
     else
-	if ! echo ${ARGS[@]} | grep -q "\-javaagent\:[^ ]*jelastic\-gc\-agent\.jar"
-	then
+	if [ "x$ADD_J_AGENT" == "xtrue" ]; then
+	    if ! echo ${ARGS[@]} | grep -q "\-javaagent\:[^ ]*jelastic\-gc\-agent\.jar"
+	    then
 		[ -z "$AGENT_DIR" ] && AGENT_DIR=$(dirname $(readlink -f "$0"))
 		AGENT="$AGENT_DIR/jelastic-gc-agent.jar"
 		[ ! -f $AGENT ] && AGENT="$AGENT_DIR/lib/jelastic-gc-agent.jar"
 		ARGS=("-javaagent:$AGENT=period=$FULL_GC_PERIOD,debug=$FULL_GC_AGENT_DEBUG" "${ARGS[@]}"); 
+	    fi
+	else
+	    for i in ${AGENT_OPTIONS[@]}; do
+		echo ${ARGS[@]} | grep -q '\'${i%=*} || ARGS=($i "${ARGS[@]}");
+	    done
 	fi
     fi
 }
