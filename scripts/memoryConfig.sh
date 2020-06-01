@@ -5,7 +5,7 @@ XMX_DEF=${XMX_DEF:-AUTO}
 #if auto then set XMX = 80% * total available RAM
 XMX_DEF_PERCENT=${XMX_DEF_PERCENT:-80}
 XMS_DEF=${XMS_DEF:-32M}
-XMN_DEF=${XMN_DEF:-30M}
+#XMN_DEF=${XMN_DEF:-30M}
 XMINF_DEF=${XMINF_DEF:-0.1}
 XMAXF_DEF=${XMAXF_DEF:-0.3}
 GC_DEF=${GC_DEF:-G1GC}
@@ -34,11 +34,11 @@ then
         ARGS=("$(normalize $XMS -Xms)" "${ARGS[@]}"); 
 fi
 
-if ! echo ${ARGS[@]} | grep -q "\-Xmn[0-9]\+."
-then
-        [ -z "$XMN" ] && { XMN="-Xmn$XMN_DEF"; }
-        ARGS=("$(normalize $XMN -Xmn)" "${ARGS[@]}"); 
-fi
+#if ! echo ${ARGS[@]} | grep -q "\-Xmn[0-9]\+."
+#then
+#        [ -z "$XMN" ] && { XMN="-Xmn$XMN_DEF"; }
+#        ARGS=("$(normalize $XMN -Xmn)" "${ARGS[@]}"); 
+#fi
 
 if ! echo ${ARGS[@]} | grep -q "\-Xmx[0-9]\+."
 then
