@@ -5,7 +5,6 @@ XMX_DEF=${XMX_DEF:-AUTO}
 #if auto then set XMX = 80% * total available RAM
 XMX_DEF_PERCENT=${XMX_DEF_PERCENT:-80}
 XMS_DEF=${XMS_DEF:-32M}
-#XMN_DEF=${XMN_DEF:-30M}
 XMINF_DEF=${XMINF_DEF:-0.1}
 XMAXF_DEF=${XMAXF_DEF:-0.3}
 GC_DEF=${GC_DEF:-G1GC}
@@ -19,8 +18,8 @@ G1PERIODIC_LT_DEF=$(echo $CPU_COUNT $GC_SYS_LOAD_THRESHOLD_RATE | awk '{print $1
 G1PERIODIC_LT_DEF=${G1PERIODIC_LT_DEF:-0.3}
 G1PERIODIC_GC_INTERVAL=${G1PERIODIC_GC_INTERVAL:-900k}
 G1PERIODIC_GC_SYS_LOAD_THRESHOLD=${G1PERIODIC_GC_SYS_LOAD_THRESHOLD:-${G1PERIODIC_LT_DEF}}
-AGENT_OPTIONS=(-XX:+IdleTuningCompactOnIdle -XX:+IdleTuningGcOnIdle -XX:IdleTuningMinIdleWaitTime=180 -Xjit:waitTimeToEnterDeepIdleMode=50000)
-ADD_J_AGENT=true
+OPEN_J9_OPTIONS=(-XX:+IdleTuningCompactOnIdle -XX:+IdleTuningGcOnIdle -XX:IdleTuningMinIdleWaitTime=180 -Xjit:waitTimeToEnterDeepIdleMode=50000)
+grep -qiE 'OpenJ9' <<< "$JAVA_VERSION" && OPEN_J9=true || OPEN_J9=false
 
 function normalize {
   var="$(echo ${1} | tr '[A-Z]' '[a-z]')"
@@ -36,12 +35,6 @@ then
         ARGS=("$(normalize $XMS -Xms)" "${ARGS[@]}"); 
 fi
 
-#if ! echo ${ARGS[@]} | grep -q "\-Xmn[0-9]\+."
-#then
-#        [ -z "$XMN" ] && { XMN="-Xmn$XMN_DEF"; }
-#        ARGS=("$(normalize $XMN -Xmn)" "${ARGS[@]}"); 
-#fi
-
 if ! echo ${ARGS[@]} | grep -q "\-Xmx[0-9]\+."
 then
         [ -z "$XMX" ] && {
@@ -54,7 +47,7 @@ then
 			   cgroup_limit=$((`cat $CGROUP_MEMORY_LIMIT`/1024/1024))
 			   #choosing the smaller value
 			   memory_total=$(( memory_total < cgroup_limit ? memory_total : cgroup_limit ))
-			fi   
+			fi 
 			
         		let XMX=memory_total*XMX_DEF_PERCENT/100
         		XMX="-Xmx${XMX}M"
@@ -85,28 +78,14 @@ then
         ARGS=("$(normalize $XMAXF -Xmaxf)" "${ARGS[@]}"); 
 fi
 
-JAVA_STRING=$( env -i ${JAVA_ORIG:-java} -version 2>&1 )
-JAVA_VERSION=$( grep version <<< "$JAVA_STRING" )
-JAVA_VERSION=${JAVA_VERSION//\"/}
-[[ $(echo $JAVA_VERSION | awk '{ print $3 }'  | awk -F '[._-]' '{print $1}') -ge 9 ]] && {
-    JAVA_VERSION=$(echo $JAVA_VERSION | awk '{print $3}')
-    JAVA_MAJOR_VERSION=$(echo $JAVA_VERSION |  awk -F '[._-]' '{print $1}');
-    JAVA_MINOR_VERSION=$(echo $JAVA_VERSION |  awk -F '[._-]' '{print $2}');
-    JAVA_UPDATE_VERSION=$(echo $JAVA_VERSION |  awk -F '[._-]' '{print $3}');
-}||{
-    JAVA_MAJOR_VERSION=$(echo $JAVA_VERSION |  awk -F '[._-]' '{print $2}');
-    JAVA_MINOR_VERSION=$(echo $JAVA_VERSION |  awk -F '[._-]' '{print $3}');
-    JAVA_UPDATE_VERSION=$(echo $JAVA_VERSION |  awk -F '[._-]' '{print $4}');
-}
 
-grep -qE 'OpenJ9' <<< "$JAVA_STRING" && ADD_J_AGENT=false
 
 #checking the need of MaxPermSize param 
 if ! echo ${ARGS[@]} | grep -q "\-XX:MaxPermSize"
 then
         [[ -z "$MAXPERMSIZE" ]] && { 
         	#if java version <= 7 then configure MaxPermSize otherwise ignore 
-        	[[ $JAVA_MAJOR_VERSION -le 7 ]] && {
+        	[[ ${JAVA_VERSION%%[.|u|+]*} -le 7 ]] && {
 			let MAXPERMSIZE_VALUE=$XMX_VALUE/10; 
         		[[ $MAXPERMSIZE_VALUE -ge 64 ]] && {
 				[[ $MAXPERMSIZE_VALUE -gt 256 ]] && { MAXPERMSIZE_VALUE=256; }
@@ -116,11 +95,11 @@ then
   	}
         ARGS=($MAXPERMSIZE "${ARGS[@]}"); 
 fi
- 
+
 if ! echo ${ARGS[@]} | grep -q "\-XX:+Use.*GC"
 then	
 	[[ -z "$GC" ]] && {
-        	[[ $JAVA_MAJOR_VERSION -le 7 ]] && {
+        	[[ ${JAVA_VERSION%%[.|u|+]*} -le 7 ]] && {
 	    		[[ "$XMX_VALUE" -ge "$G1_J7_MIN_RAM_THRESHOLD" ]] && GC="-XX:+UseG1GC" || GC="-XX:+UseParNewGC";
 	    	} || {
 	    		GC="-XX:+Use$GC_DEF";
@@ -130,33 +109,17 @@ then
         
 fi 
    
-#if ! `echo $ARGS | grep -q "UseCompressedOops"`
-#then
-	#CompressedOops - compression of pointers in the Java Heap 
-	#UseCompressedClassPointers - compression of pointers in JVM Metadata  
-	#there is a dependency between the two options: UseCompressedOops must be on for UseCompressedClassPointers to be on
-#	if ! `echo $ARGS | grep -q "UseCompressedClassPointers"`
-#	then
-#		ARGS="-XX:+UseCompressedClassPointers $ARGS"
-#	fi
-#    	ARGS="-XX:+UseCompressedOops $ARGS"
-#fi
-
 #enabling string deduplication feature https://blogs.oracle.com/java-platform-group/entry/g1_from_garbage_collector_to
 if ! echo ${ARGS[@]} | grep -q "UseStringDeduplication"
 then
 	if  `echo $ARGS | grep -q "\-XX:+UseG1GC"`
 	then
-		#this feature works for java >= 1.8.0_20
-		if [ $JAVA_MAJOR_VERSION -gt 8 ] || ([ $JAVA_MAJOR_VERSION -eq 8 ] && ([ $JAVA_MINOR_VERSION -gt 0 ] || [ $JAVA_UPDATE_VERSION -ge 20 ]))
-		then	
     			ARGS=("-XX:+UseStringDeduplication" "${ARGS[@]}"); 
-		fi 
 	fi 
 fi
 
 [ "$VERT_SCALING" != "false" -a "$VERT_SCALING" != "0" ] && {
-    if [[ $JAVA_MAJOR_VERSION -ge 12 ]]; then
+    if [[ ${JAVA_VERSION%%[.|u|+]*} -ge 12 ]]; then
 	if ! echo ${ARGS[@]} | grep -q "G1PeriodicGCInterval"; then
 		ARGS=("-XX:G1PeriodicGCInterval=${G1PERIODIC_GC_INTERVAL}" "${ARGS[@]}");
 	fi
@@ -164,7 +127,11 @@ fi
 		ARGS=("-XX:G1PeriodicGCSystemLoadThreshold=${G1PERIODIC_GC_SYS_LOAD_THRESHOLD}" "${ARGS[@]}");
 	fi
     else
-	if [ "x$ADD_J_AGENT" == "xtrue" ]; then
+	if [ "x$OPEN_J9" == "xtrue" ]; then
+	    for i in ${OPEN_J9_OPTIONS[@]}; do
+		echo ${ARGS[@]} | grep -q '\'${i%=*} || ARGS=($i "${ARGS[@]}");
+	    done
+	else
 	    if ! echo ${ARGS[@]} | grep -q "\-javaagent\:[^ ]*jelastic\-gc\-agent\.jar"
 	    then
 		[ -z "$AGENT_DIR" ] && AGENT_DIR=$(dirname $(readlink -f "$0"))
@@ -172,10 +139,6 @@ fi
 		[ ! -f $AGENT ] && AGENT="$AGENT_DIR/lib/jelastic-gc-agent.jar"
 		ARGS=("-javaagent:$AGENT=period=$FULL_GC_PERIOD,debug=$FULL_GC_AGENT_DEBUG" "${ARGS[@]}"); 
 	    fi
-	else
-	    for i in ${AGENT_OPTIONS[@]}; do
-		echo ${ARGS[@]} | grep -q '\'${i%=*} || ARGS=($i "${ARGS[@]}");
-	    done
 	fi
     fi
 }
