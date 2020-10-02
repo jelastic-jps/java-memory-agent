@@ -25,6 +25,7 @@ OPEN_J9_OPTIONS=(-XX:+IdleTuningCompactOnIdle -XX:+IdleTuningGcOnIdle -XX:IdleTu
     JAVA_VERSION=$( grep version <<< $JAVA_STRING | sed -re "s/.*version (.*)\".*/\1/"  -e 's/\"//g' -e 's/^(1\.)//' )
     [ -z $OPENJ9_STRING ] || JAVA_VERSION=${JAVA_VERSION}-${OPENJ9_STRING}
 }
+JAVA_VERSION=${JAVA_VERSION/jdk}
 grep -qiE 'OpenJ9' <<< "$JAVA_VERSION" && OPEN_J9=true || OPEN_J9=false
 
 function normalize {
@@ -83,8 +84,6 @@ then
         [ -z "$XMAXF" ] && { XMAXF="-Xmaxf$XMAXF_DEF"; }
         ARGS=("$(normalize $XMAXF -Xmaxf)" "${ARGS[@]}"); 
 fi
-
-
 
 #checking the need of MaxPermSize param 
 if ! echo ${ARGS[@]} | grep -q "\-XX:MaxPermSize"
