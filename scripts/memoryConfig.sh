@@ -19,6 +19,12 @@ G1PERIODIC_LT_DEF=${G1PERIODIC_LT_DEF:-0.3}
 G1PERIODIC_GC_INTERVAL=${G1PERIODIC_GC_INTERVAL:-900k}
 G1PERIODIC_GC_SYS_LOAD_THRESHOLD=${G1PERIODIC_GC_SYS_LOAD_THRESHOLD:-${G1PERIODIC_LT_DEF}}
 OPEN_J9_OPTIONS=(-XX:+IdleTuningCompactOnIdle -XX:+IdleTuningGcOnIdle -XX:IdleTuningMinIdleWaitTime=180 -Xjit:waitTimeToEnterDeepIdleMode=50000)
+[ -z "$JAVA_VERSION" ] && {
+    JAVA_STRING=$( env -i ${JAVA_ORIG:-java} -version 2>&1 )
+    OPENJ9_STRING=$( grep -oE 'openj9-[0-9\.]{1,}' <<< $JAVA_STRING )
+    JAVA_VERSION=$( grep version <<< $JAVA_STRING | sed -re "s/.*version (.*)\".*/\1/"  -e 's/\"//g' -e 's/^(1\.)//' )
+    [ -z $OPENJ9_STRING ] || JAVA_VERSION=${JAVA_VERSION}-${OPENJ9_STRING}
+}
 grep -qiE 'OpenJ9' <<< "$JAVA_VERSION" && OPEN_J9=true || OPEN_J9=false
 
 function normalize {
@@ -85,7 +91,7 @@ if ! echo ${ARGS[@]} | grep -q "\-XX:MaxPermSize"
 then
         [[ -z "$MAXPERMSIZE" ]] && { 
         	#if java version <= 7 then configure MaxPermSize otherwise ignore 
-        	[[ ${JAVA_VERSION%%[.|u|+]*} -le 7 ]] && {
+        	[[ ! -z $JAVA_VERSION && ${JAVA_VERSION%%[.|u|+]*} -le 7 ]] && {
 			let MAXPERMSIZE_VALUE=$XMX_VALUE/10; 
         		[[ $MAXPERMSIZE_VALUE -ge 64 ]] && {
 				[[ $MAXPERMSIZE_VALUE -gt 256 ]] && { MAXPERMSIZE_VALUE=256; }
@@ -99,7 +105,7 @@ fi
 if ! echo ${ARGS[@]} | grep -q "\-XX:+Use.*GC"
 then	
 	[[ -z "$GC" ]] && {
-        	[[ ${JAVA_VERSION%%[.|u|+]*} -le 7 ]] && {
+        	[[ ! -z $JAVA_VERSION && ${JAVA_VERSION%%[.|u|+]*} -le 7 ]] && {
 	    		[[ "$XMX_VALUE" -ge "$G1_J7_MIN_RAM_THRESHOLD" ]] && GC="-XX:+UseG1GC" || GC="-XX:+UseParNewGC";
 	    	} || {
 	    		GC="-XX:+Use$GC_DEF";
@@ -119,7 +125,7 @@ then
 fi
 
 [ "$VERT_SCALING" != "false" -a "$VERT_SCALING" != "0" ] && {
-    if [[ ${JAVA_VERSION%%[.|u|+]*} -ge 12 ]]; then
+    if [[ ! -z $JAVA_VERSION && ${JAVA_VERSION%%[.|u|+]*} -ge 12 ]]; then
 	if ! echo ${ARGS[@]} | grep -q "G1PeriodicGCInterval"; then
 		ARGS=("-XX:G1PeriodicGCInterval=${G1PERIODIC_GC_INTERVAL}" "${ARGS[@]}");
 	fi
