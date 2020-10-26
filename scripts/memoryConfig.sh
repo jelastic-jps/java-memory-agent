@@ -20,7 +20,7 @@ G1PERIODIC_GC_INTERVAL=${G1PERIODIC_GC_INTERVAL:-900k}
 G1PERIODIC_GC_SYS_LOAD_THRESHOLD=${G1PERIODIC_GC_SYS_LOAD_THRESHOLD:-${G1PERIODIC_LT_DEF}}
 OPEN_J9_OPTIONS=(-XX:+IdleTuningCompactOnIdle -XX:+IdleTuningGcOnIdle -XX:IdleTuningMinIdleWaitTime=180 -Xjit:waitTimeToEnterDeepIdleMode=50000)
 [ -z "$JAVA_VERSION" ] && {
-    echo "Environment variable JAVA_VERSION is empty or not set"
+    echo "ERROR: Environment variable JAVA_VERSION is empty or not set"
     exit 1
 }
 
