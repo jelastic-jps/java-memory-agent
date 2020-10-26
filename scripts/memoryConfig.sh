@@ -20,11 +20,10 @@ G1PERIODIC_GC_INTERVAL=${G1PERIODIC_GC_INTERVAL:-900k}
 G1PERIODIC_GC_SYS_LOAD_THRESHOLD=${G1PERIODIC_GC_SYS_LOAD_THRESHOLD:-${G1PERIODIC_LT_DEF}}
 OPEN_J9_OPTIONS=(-XX:+IdleTuningCompactOnIdle -XX:+IdleTuningGcOnIdle -XX:IdleTuningMinIdleWaitTime=180 -Xjit:waitTimeToEnterDeepIdleMode=50000)
 [ -z "$JAVA_VERSION" ] && {
-    JAVA_STRING=$( env -i ${JAVA_ORIG:-java} -version 2>&1 )
-    OPENJ9_STRING=$( grep -oE 'openj9-[0-9\.]{1,}' <<< $JAVA_STRING )
-    JAVA_VERSION=$( grep version <<< $JAVA_STRING | sed -re "s/.*version (.*)\".*/\1/"  -e 's/\"//g' -e 's/^(1\.)//' )
-    [ -z $OPENJ9_STRING ] || JAVA_VERSION=${JAVA_VERSION}-${OPENJ9_STRING}
+    echo "Environment variable JAVA_VERSION is empty or not set"
+    exit 1
 }
+
 JAVA_VERSION=${JAVA_VERSION/jdk}
 grep -qiE 'OpenJ9' <<< "$JAVA_VERSION" && OPEN_J9=true || OPEN_J9=false
 
