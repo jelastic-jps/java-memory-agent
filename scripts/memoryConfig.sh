@@ -31,7 +31,7 @@ grep -qiE 'OpenJ9' <<< "$JAVA_VERSION" && OPEN_J9=true || OPEN_J9=false
 function normalize {
   var="$(echo ${1} | tr '[A-Z]' '[a-z]')"
   prefix="$(echo ${2} | tr '[A-Z]' '[a-z]')"
-  [[ "${var}" == "${prefix}"* ]] && { echo ${1}; } || { [[ "${var}" == "${prefix:1:100}"* ]] && echo "-"${1} || echo ${2}${1}; } 
+  [[ "${var}" == "${prefix}"* ]] && { echo ${1}; } || { [[ "${var}" == "${prefix:1:100}"* ]] && echo "-"${1} || echo ${2}${1}; }
 }
 
 ARGS=("$@")
@@ -98,11 +98,11 @@ then
                 	}
 		}
   	}
-        ARGS=($MAXPERMSIZE "${ARGS[@]}"); 
+        ARGS=($MAXPERMSIZE "${ARGS[@]}");
 fi
 
 if ! echo ${ARGS[@]} | grep -q "\-XX:+Use.*GC"
-then	
+then
 	[[ -z "$GC" ]] && {
         	[[ ! -z $JAVA_VERSION && ${JAVA_VERSION%%[.|u|+]*} -le 7 ]] && {
 	    		[[ "$XMX_VALUE" -ge "$G1_J7_MIN_RAM_THRESHOLD" ]] && GC="-XX:+UseG1GC" || GC="-XX:+UseParNewGC";
@@ -110,14 +110,14 @@ then
 	    		GC="-XX:+Use$GC_DEF";
 	    	}
      	}
-        ARGS=("$GC" "${ARGS[@]}"); 
+        ARGS=("$GC" "${ARGS[@]}");
 fi
-   
+
 #enabling string deduplication feature https://blogs.oracle.com/java-platform-group/entry/g1_from_garbage_collector_to
 if echo ${ARGS[@]} | grep -q "\-XX:+UseG1GC"; then
 	if ! echo ${ARGS[@]} | grep -q "UseStringDeduplication"; then
 			ARGS=("-XX:+UseStringDeduplication" "${ARGS[@]}");
-	fi 
+	fi
 fi
 
 [ "$VERT_SCALING" != "false" -a "$VERT_SCALING" != "0" ] && {
@@ -131,7 +131,7 @@ fi
 			ARGS=("-XX:ZCollectionInterval=$ZCOLLECTION_INTERVAL" "${ARGS[@]}");
 		fi
 	fi
-	if  `echo ${ARGS[@]} | grep -q "\-XX:+UseG1GC"`; then
+	if  echo ${ARGS[@]} | grep -q "\-XX:+UseG1GC"; then
 		if [[ ! -z $JAVA_VERSION && ${JAVA_VERSION%%[.|u|+]*} -ge 12 ]]; then
 			if ! echo ${ARGS[@]} | grep -q "G1PeriodicGCInterval"; then
 				ARGS=("-XX:G1PeriodicGCInterval=${G1PERIODIC_GC_INTERVAL}" "${ARGS[@]}");
@@ -168,7 +168,7 @@ fi
 
 if ! echo ${ARGS[@]} | grep -q "\-server"
 then
-    	ARGS=("-server" "${ARGS[@]}"); 
+	ARGS=("-server" "${ARGS[@]}"); 
 fi
 
 set -- "${ARGS[@]}"
