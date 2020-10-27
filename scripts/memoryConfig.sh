@@ -18,6 +18,7 @@ G1PERIODIC_LT_DEF=$(echo $CPU_COUNT $GC_SYS_LOAD_THRESHOLD_RATE | awk '{print $1
 G1PERIODIC_LT_DEF=${G1PERIODIC_LT_DEF:-0.3}
 G1PERIODIC_GC_INTERVAL=${G1PERIODIC_GC_INTERVAL:-900k}
 G1PERIODIC_GC_SYS_LOAD_THRESHOLD=${G1PERIODIC_GC_SYS_LOAD_THRESHOLD:-${G1PERIODIC_LT_DEF}}
+ZCOLLECTION_INTERVAL=${ZCOLLECTION_INTERVAL:-900}
 OPEN_J9_OPTIONS=(-XX:+IdleTuningCompactOnIdle -XX:+IdleTuningGcOnIdle -XX:IdleTuningMinIdleWaitTime=180 -Xjit:waitTimeToEnterDeepIdleMode=50000)
 [ -z "$JAVA_VERSION" ] && {
     echo "ERROR: Environment variable JAVA_VERSION is empty or not set"
@@ -110,24 +111,27 @@ then
 	    	}
      	}
         ARGS=("$GC" "${ARGS[@]}"); 
-        
-fi 
+fi
    
 #enabling string deduplication feature https://blogs.oracle.com/java-platform-group/entry/g1_from_garbage_collector_to
-if ! echo ${ARGS[@]} | grep -q "UseStringDeduplication"
-then
-	if  `echo $ARGS | grep -q "\-XX:+UseG1GC"`
-	then
-    			ARGS=("-XX:+UseStringDeduplication" "${ARGS[@]}"); 
+if echo ${ARGS[@]} | grep -q "\-XX:+UseG1GC"; then
+	if ! echo ${ARGS[@]} | grep -q "UseStringDeduplication"; then
+			ARGS=("-XX:+UseStringDeduplication" "${ARGS[@]}");
 	fi 
 fi
 
 [ "$VERT_SCALING" != "false" -a "$VERT_SCALING" != "0" ] && {
-	if [ "x$OPEN_J9" == "xtrue" ]; then
-		for i in ${OPEN_J9_OPTIONS[@]}; do
-			echo ${ARGS[@]} | grep -q '\'${i%=*} || ARGS=($i "${ARGS[@]}");
-		done
-	else
+	if echo ${ARGS[@]} | grep -q "\-XX:+UseShenandoahGC"; then
+		if ! echo ${ARGS[@]} | grep -q "ShenandoahGCHeuristics"; then
+			ARGS=("-XX:ShenandoahGCHeuristics=compact" "${ARGS[@]}");
+		fi
+	fi
+	if echo ${ARGS[@]} | grep -q "\-XX:+UseZGC"; then
+		if ! echo ${ARGS[@]} | grep -q "ZCollectionInterval"; then
+			ARGS=("-XX:ZCollectionInterval=$ZCOLLECTION_INTERVAL" "${ARGS[@]}");
+		fi
+	fi
+	if  `echo ${ARGS[@]} | grep -q "\-XX:+UseG1GC"`; then
 		if [[ ! -z $JAVA_VERSION && ${JAVA_VERSION%%[.|u|+]*} -ge 12 ]]; then
 			if ! echo ${ARGS[@]} | grep -q "G1PeriodicGCInterval"; then
 				ARGS=("-XX:G1PeriodicGCInterval=${G1PERIODIC_GC_INTERVAL}" "${ARGS[@]}");
@@ -135,7 +139,15 @@ fi
 			if ! echo ${ARGS[@]} | grep -q "G1PeriodicGCSystemLoadThreshold"; then
 				ARGS=("-XX:G1PeriodicGCSystemLoadThreshold=${G1PERIODIC_GC_SYS_LOAD_THRESHOLD}" "${ARGS[@]}");
 			fi
-		else
+		fi
+	fi
+	if [ "x$OPEN_J9" == "xtrue" ]; then
+		for i in ${OPEN_J9_OPTIONS[@]}; do
+			echo ${ARGS[@]} | grep -q '\'${i%=*} || ARGS=($i "${ARGS[@]}");
+		done
+	else
+		if [[ ! -z $JAVA_VERSION && ${JAVA_VERSION%%[.|u|+]*} -lt 12 ]]; then
+			# if jdk < 12
 			if ! echo ${ARGS[@]} | grep -q "\-javaagent\:[^ ]*jelastic\-gc\-agent\.jar"
 			then
 				[ -z "$AGENT_DIR" ] && AGENT_DIR=$(dirname $(readlink -f "$0"))
