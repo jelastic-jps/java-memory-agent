@@ -134,11 +134,13 @@ fi
 			ARGS=("-XX:ZCollectionInterval=$ZCOLLECTION_INTERVAL" "${ARGS[@]}");
 		fi
 	elif [[ ! -z $JAVA_VERSION && ${JAVA_VERSION%%[.|u|+]*} -ge 12 ]]; then
-		if ! echo ${ARGS[@]} | grep -q "G1PeriodicGCInterval"; then
-			ARGS=("-XX:G1PeriodicGCInterval=${G1PERIODIC_GC_INTERVAL}" "${ARGS[@]}");
-		fi
-		if ! echo ${ARGS[@]} | grep -q "G1PeriodicGCSystemLoadThreshold"; then
-			ARGS=("-XX:G1PeriodicGCSystemLoadThreshold=${G1PERIODIC_GC_SYS_LOAD_THRESHOLD}" "${ARGS[@]}");
+		if  echo ${ARGS[@]} | grep -q "\-XX:+UseG1GC"; then
+			if ! echo ${ARGS[@]} | grep -q "G1PeriodicGCInterval"; then
+				ARGS=("-XX:G1PeriodicGCInterval=${G1PERIODIC_GC_INTERVAL}" "${ARGS[@]}");
+			fi
+			if ! echo ${ARGS[@]} | grep -q "G1PeriodicGCSystemLoadThreshold"; then
+				ARGS=("-XX:G1PeriodicGCSystemLoadThreshold=${G1PERIODIC_GC_SYS_LOAD_THRESHOLD}" "${ARGS[@]}");
+			fi
 		fi
 	else
 		# if jdk < 12
