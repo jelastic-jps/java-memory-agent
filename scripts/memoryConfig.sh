@@ -121,40 +121,33 @@ if echo ${ARGS[@]} | grep -q "\-XX:+UseG1GC"; then
 fi
 
 [ "$VERT_SCALING" != "false" -a "$VERT_SCALING" != "0" ] && {
-	if echo ${ARGS[@]} | grep -q "\-XX:+UseShenandoahGC"; then
-		if ! echo ${ARGS[@]} | grep -q "ShenandoahGCHeuristics"; then
-			ARGS=("-XX:ShenandoahGCHeuristics=compact" "${ARGS[@]}");
-		fi
-	fi
-	if echo ${ARGS[@]} | grep -q "\-XX:+UseZGC"; then
-		if ! echo ${ARGS[@]} | grep -q "ZCollectionInterval"; then
-			ARGS=("-XX:ZCollectionInterval=$ZCOLLECTION_INTERVAL" "${ARGS[@]}");
-		fi
-	fi
-	if  echo ${ARGS[@]} | grep -q "\-XX:+UseG1GC"; then
-		if [[ ! -z $JAVA_VERSION && ${JAVA_VERSION%%[.|u|+]*} -ge 12 ]]; then
-			if ! echo ${ARGS[@]} | grep -q "G1PeriodicGCInterval"; then
-				ARGS=("-XX:G1PeriodicGCInterval=${G1PERIODIC_GC_INTERVAL}" "${ARGS[@]}");
-			fi
-			if ! echo ${ARGS[@]} | grep -q "G1PeriodicGCSystemLoadThreshold"; then
-				ARGS=("-XX:G1PeriodicGCSystemLoadThreshold=${G1PERIODIC_GC_SYS_LOAD_THRESHOLD}" "${ARGS[@]}");
-			fi
-		fi
-	fi
 	if [ "x$OPEN_J9" == "xtrue" ]; then
 		for i in ${OPEN_J9_OPTIONS[@]}; do
 			echo ${ARGS[@]} | grep -q '\'${i%=*} || ARGS=($i "${ARGS[@]}");
 		done
+	elif echo ${ARGS[@]} | grep -q "\-XX:+UseShenandoahGC"; then
+		if ! echo ${ARGS[@]} | grep -q "ShenandoahGCHeuristics"; then
+			ARGS=("-XX:ShenandoahGCHeuristics=compact" "${ARGS[@]}");
+		fi
+	elif echo ${ARGS[@]} | grep -q "\-XX:+UseZGC"; then
+		if ! echo ${ARGS[@]} | grep -q "ZCollectionInterval"; then
+			ARGS=("-XX:ZCollectionInterval=$ZCOLLECTION_INTERVAL" "${ARGS[@]}");
+		fi
+	elif [[ ! -z $JAVA_VERSION && ${JAVA_VERSION%%[.|u|+]*} -ge 12 ]]; then
+		if ! echo ${ARGS[@]} | grep -q "G1PeriodicGCInterval"; then
+			ARGS=("-XX:G1PeriodicGCInterval=${G1PERIODIC_GC_INTERVAL}" "${ARGS[@]}");
+		fi
+		if ! echo ${ARGS[@]} | grep -q "G1PeriodicGCSystemLoadThreshold"; then
+			ARGS=("-XX:G1PeriodicGCSystemLoadThreshold=${G1PERIODIC_GC_SYS_LOAD_THRESHOLD}" "${ARGS[@]}");
+		fi
 	else
-		if [[ ! -z $JAVA_VERSION && ${JAVA_VERSION%%[.|u|+]*} -lt 12 ]]; then
-			# if jdk < 12
-			if ! echo ${ARGS[@]} | grep -q "\-javaagent\:[^ ]*jelastic\-gc\-agent\.jar"
-			then
-				[ -z "$AGENT_DIR" ] && AGENT_DIR=$(dirname $(readlink -f "$0"))
-				AGENT="$AGENT_DIR/jelastic-gc-agent.jar"
-				[ ! -f $AGENT ] && AGENT="$AGENT_DIR/lib/jelastic-gc-agent.jar"
-				ARGS=("-javaagent:$AGENT=period=$FULL_GC_PERIOD,debug=$FULL_GC_AGENT_DEBUG" "${ARGS[@]}"); 
-			fi
+		# if jdk < 12
+		if ! echo ${ARGS[@]} | grep -q "\-javaagent\:[^ ]*jelastic\-gc\-agent\.jar"
+		then
+			[ -z "$AGENT_DIR" ] && AGENT_DIR=$(dirname $(readlink -f "$0"))
+			AGENT="$AGENT_DIR/jelastic-gc-agent.jar"
+			[ ! -f $AGENT ] && AGENT="$AGENT_DIR/lib/jelastic-gc-agent.jar"
+			ARGS=("-javaagent:$AGENT=period=$FULL_GC_PERIOD,debug=$FULL_GC_AGENT_DEBUG" "${ARGS[@]}"); 
 		fi
 	fi
 }
