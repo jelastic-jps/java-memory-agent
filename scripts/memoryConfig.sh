@@ -18,20 +18,20 @@ G1PERIODIC_LT_DEF=$(echo $CPU_COUNT $GC_SYS_LOAD_THRESHOLD_RATE | awk '{print $1
 G1PERIODIC_LT_DEF=${G1PERIODIC_LT_DEF:-0.3}
 G1PERIODIC_GC_INTERVAL=${G1PERIODIC_GC_INTERVAL:-900k}
 G1PERIODIC_GC_SYS_LOAD_THRESHOLD=${G1PERIODIC_GC_SYS_LOAD_THRESHOLD:-${G1PERIODIC_LT_DEF}}
+ZCOLLECTION_INTERVAL=${ZCOLLECTION_INTERVAL:-900}
 OPEN_J9_OPTIONS=(-XX:+IdleTuningCompactOnIdle -XX:+IdleTuningGcOnIdle -XX:IdleTuningMinIdleWaitTime=180 -Xjit:waitTimeToEnterDeepIdleMode=50000)
 [ -z "$JAVA_VERSION" ] && {
-    JAVA_STRING=$( env -i ${JAVA_ORIG:-java} -version 2>&1 )
-    OPENJ9_STRING=$( grep -oE 'openj9-[0-9\.]{1,}' <<< $JAVA_STRING )
-    JAVA_VERSION=$( grep version <<< $JAVA_STRING | sed -re "s/.*version (.*)\".*/\1/"  -e 's/\"//g' -e 's/^(1\.)//' )
-    [ -z $OPENJ9_STRING ] || JAVA_VERSION=${JAVA_VERSION}-${OPENJ9_STRING}
+    echo "ERROR: Environment variable JAVA_VERSION is empty or not set"
+    exit 1
 }
+
 JAVA_VERSION=${JAVA_VERSION/jdk}
 grep -qiE 'OpenJ9' <<< "$JAVA_VERSION" && OPEN_J9=true || OPEN_J9=false
 
 function normalize {
   var="$(echo ${1} | tr '[A-Z]' '[a-z]')"
   prefix="$(echo ${2} | tr '[A-Z]' '[a-z]')"
-  [[ "${var}" == "${prefix}"* ]] && { echo ${1}; } || { [[ "${var}" == "${prefix:1:100}"* ]] && echo "-"${1} || echo ${2}${1}; } 
+  [[ "${var}" == "${prefix}"* ]] && { echo ${1}; } || { [[ "${var}" == "${prefix:1:100}"* ]] && echo "-"${1} || echo ${2}${1}; }
 }
 
 ARGS=("$@")
@@ -98,11 +98,11 @@ then
                 	}
 		}
   	}
-        ARGS=($MAXPERMSIZE "${ARGS[@]}"); 
+        ARGS=($MAXPERMSIZE "${ARGS[@]}");
 fi
 
 if ! echo ${ARGS[@]} | grep -q "\-XX:+Use.*GC"
-then	
+then
 	[[ -z "$GC" ]] && {
         	[[ ! -z $JAVA_VERSION && ${JAVA_VERSION%%[.|u|+]*} -le 7 ]] && {
 	    		[[ "$XMX_VALUE" -ge "$G1_J7_MIN_RAM_THRESHOLD" ]] && GC="-XX:+UseG1GC" || GC="-XX:+UseParNewGC";
@@ -110,42 +110,48 @@ then
 	    		GC="-XX:+Use$GC_DEF";
 	    	}
      	}
-        ARGS=("$GC" "${ARGS[@]}"); 
-        
-fi 
-   
+        ARGS=("$GC" "${ARGS[@]}");
+fi
+
 #enabling string deduplication feature https://blogs.oracle.com/java-platform-group/entry/g1_from_garbage_collector_to
-if ! echo ${ARGS[@]} | grep -q "UseStringDeduplication"
-then
-	if  `echo $ARGS | grep -q "\-XX:+UseG1GC"`
-	then
-    			ARGS=("-XX:+UseStringDeduplication" "${ARGS[@]}"); 
-	fi 
+if echo ${ARGS[@]} | grep -q "\-XX:+UseG1GC"; then
+	if ! echo ${ARGS[@]} | grep -q "UseStringDeduplication"; then
+			ARGS=("-XX:+UseStringDeduplication" "${ARGS[@]}");
+	fi
 fi
 
 [ "$VERT_SCALING" != "false" -a "$VERT_SCALING" != "0" ] && {
-    if [[ ! -z $JAVA_VERSION && ${JAVA_VERSION%%[.|u|+]*} -ge 12 ]]; then
-	if ! echo ${ARGS[@]} | grep -q "G1PeriodicGCInterval"; then
-		ARGS=("-XX:G1PeriodicGCInterval=${G1PERIODIC_GC_INTERVAL}" "${ARGS[@]}");
-	fi
-	if ! echo ${ARGS[@]} | grep -q "G1PeriodicGCSystemLoadThreshold"; then
-		ARGS=("-XX:G1PeriodicGCSystemLoadThreshold=${G1PERIODIC_GC_SYS_LOAD_THRESHOLD}" "${ARGS[@]}");
-	fi
-    else
 	if [ "x$OPEN_J9" == "xtrue" ]; then
-	    for i in ${OPEN_J9_OPTIONS[@]}; do
-		echo ${ARGS[@]} | grep -q '\'${i%=*} || ARGS=($i "${ARGS[@]}");
-	    done
+		for i in ${OPEN_J9_OPTIONS[@]}; do
+			echo ${ARGS[@]} | grep -q '\'${i%=*} || ARGS=($i "${ARGS[@]}");
+		done
+	elif echo ${ARGS[@]} | grep -q "\-XX:+UseShenandoahGC"; then
+		if ! echo ${ARGS[@]} | grep -q "ShenandoahGCHeuristics"; then
+			ARGS=("-XX:ShenandoahGCHeuristics=compact" "${ARGS[@]}");
+		fi
+	elif echo ${ARGS[@]} | grep -q "\-XX:+UseZGC"; then
+		if ! echo ${ARGS[@]} | grep -q "ZCollectionInterval"; then
+			ARGS=("-XX:ZCollectionInterval=$ZCOLLECTION_INTERVAL" "${ARGS[@]}");
+		fi
+	elif [[ ! -z $JAVA_VERSION && ${JAVA_VERSION%%[.|u|+]*} -ge 12 ]]; then
+		if  echo ${ARGS[@]} | grep -q "\-XX:+UseG1GC"; then
+			if ! echo ${ARGS[@]} | grep -q "G1PeriodicGCInterval"; then
+				ARGS=("-XX:G1PeriodicGCInterval=${G1PERIODIC_GC_INTERVAL}" "${ARGS[@]}");
+			fi
+			if ! echo ${ARGS[@]} | grep -q "G1PeriodicGCSystemLoadThreshold"; then
+				ARGS=("-XX:G1PeriodicGCSystemLoadThreshold=${G1PERIODIC_GC_SYS_LOAD_THRESHOLD}" "${ARGS[@]}");
+			fi
+		fi
 	else
-	    if ! echo ${ARGS[@]} | grep -q "\-javaagent\:[^ ]*jelastic\-gc\-agent\.jar"
-	    then
-		[ -z "$AGENT_DIR" ] && AGENT_DIR=$(dirname $(readlink -f "$0"))
-		AGENT="$AGENT_DIR/jelastic-gc-agent.jar"
-		[ ! -f $AGENT ] && AGENT="$AGENT_DIR/lib/jelastic-gc-agent.jar"
-		ARGS=("-javaagent:$AGENT=period=$FULL_GC_PERIOD,debug=$FULL_GC_AGENT_DEBUG" "${ARGS[@]}"); 
-	    fi
+		# if jdk < 12
+		if ! echo ${ARGS[@]} | grep -q "\-javaagent\:[^ ]*jelastic\-gc\-agent\.jar"
+		then
+			[ -z "$AGENT_DIR" ] && AGENT_DIR=$(dirname $(readlink -f "$0"))
+			AGENT="$AGENT_DIR/jelastic-gc-agent.jar"
+			[ ! -f $AGENT ] && AGENT="$AGENT_DIR/lib/jelastic-gc-agent.jar"
+			ARGS=("-javaagent:$AGENT=period=$FULL_GC_PERIOD,debug=$FULL_GC_AGENT_DEBUG" "${ARGS[@]}"); 
+		fi
 	fi
-    fi
 }
 
 [ "x${UNLOCK_EXPERIMENTAL,,}" != "xfalse" -a "x$UNLOCK_EXPERIMENTAL" != "x0" ] && {
@@ -157,7 +163,7 @@ fi
 
 if ! echo ${ARGS[@]} | grep -q "\-server"
 then
-    	ARGS=("-server" "${ARGS[@]}"); 
+	ARGS=("-server" "${ARGS[@]}"); 
 fi
 
 set -- "${ARGS[@]}"
