@@ -49,10 +49,14 @@ Upon installation, the Java Memory Agent add-on automatically preserves the prev
 
 ![java-agent-uninstall](images/java-agent-uninstall.png)
 
-For that, click on the **Add-ons** button next to the corresponding environment layer to open the same-named tab and select the **Uninstall** option within the _Java Memory Agent_ plank menu.
+For that, click on the **Add-ons** button next to the corresponding environment layer to open the same-named tab and select the **Uninstall** option within the _Java Memory Agent_  menu.
 
 ## Related Articles
 
+* [Elastic JVM with Automatic Vertical Memory Scaling](https://jelastic.com/blog/elastic-jvm-vertical-scaling/)
 * [5 Steps to Stop Overpaying for Java Cloud Hosting](https://jelastic.com/blog/stop-overpaying-for-java-cloud-hosting-resources/)
 * [Garbage Collector Tuning - Java Memory Usage Optimization](https://jelastic.com/blog/tuning-garbage-collector-java-memory-usage-optimization/)
 * [Java RAM Usage in Containers: Top 5 Tips Not to Lose Your Memory](https://jelastic.com/blog/java-ram-usage-in-containers-top-5-tips-not-to-lose-your-memory/)
+* [State of Java Elasticity. Tuning Java Efficiency](https://www2.slideshare.net/jelastic/state-of-java-elasticity-tuning-java-efficiency-gidsjava-live-2020)
+* [Elastic JVM for Scalable Java EE Applications Running in Containers](https://www2.slideshare.net/jelastic/elastic-jvm-for-scalable-java-ee-applications-running-in-containers-jakartatechtalks)
+* [Choosing Right Garbage Collector to Increase Efficiency of Java Memory Usage](https://www2.slideshare.net/jelastic/choosing-right-garbage-collector-to-increase-efficiency-of-java-memory-usage)
