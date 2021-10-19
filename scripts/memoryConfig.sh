@@ -5,6 +5,7 @@ XMX_DEF=${XMX_DEF:-AUTO}
 #if auto then set XMX = 80% * total available RAM
 XMX_DEF_PERCENT=${XMX_DEF_PERCENT:-80}
 XMS_DEF=${XMS_DEF:-32M}
+XMS_DEF_PERCENT=${XMS_DEF_PERCENT:-AUTO}
 XMINF_DEF=${XMINF_DEF:-0.1}
 XMAXF_DEF=${XMAXF_DEF:-0.3}
 GC_DEF=${GC_DEF:-G1GC}
@@ -36,33 +37,38 @@ function normalize {
 
 ARGS=("$@")
 
+memory_total=`free -m | grep Mem | awk '{print $2}'`
+#checking cgroup memory limit in container https://goo.gl/gnF8m9
+CGROUP_MEMORY_LIMIT="/sys/fs/cgroup/memory/memory.limit_in_bytes"
+if [ -f $CGROUP_MEMORY_LIMIT ]; then
+    cgroup_limit=$((`cat $CGROUP_MEMORY_LIMIT`/1024/1024))
+    #choosing the smaller value
+    memory_total=$(( memory_total < cgroup_limit ? memory_total : cgroup_limit ))
+fi
+
 if ! echo ${ARGS[@]} | grep -q "\-Xms[0-9]\+."
 then
+    if [[ "X${XMS_DEF_PERCENT^^}" == "XAUTO" ]] ; then
         [ -z "$XMS" ] && { XMS="-Xms$XMS_DEF"; }
-        ARGS=("$(normalize $XMS -Xms)" "${ARGS[@]}"); 
+    else
+        [[ $XMS_DEF_PERCENT > $XMX_DEF_PERCENT ]] && XMS_DEF_PERCENT=$XMX_DEF_PERCENT
+        let XMS=memory_total*XMS_DEF_PERCENT/100
+        XMS="-Xms${XMS}M"
+    fi
+    ARGS=("$(normalize $XMS -Xms)" "${ARGS[@]}");
 fi
 
 if ! echo ${ARGS[@]} | grep -q "\-Xmx[0-9]\+."
 then
         [ -z "$XMX" ] && {
-		[ "$XMX_DEF" == "AUTO" ] && {		
-        		memory_total=`free -m | grep Mem | awk '{print $2}'`
-			
-			#checking cgroup memory limit in container https://goo.gl/gnF8m9
-			CGROUP_MEMORY_LIMIT="/sys/fs/cgroup/memory/memory.limit_in_bytes"
-			if [ -f $CGROUP_MEMORY_LIMIT ]; then
-			   cgroup_limit=$((`cat $CGROUP_MEMORY_LIMIT`/1024/1024))
-			   #choosing the smaller value
-			   memory_total=$(( memory_total < cgroup_limit ? memory_total : cgroup_limit ))
-			fi 
-			
+		[ "$XMX_DEF" == "AUTO" ] && {
         		let XMX=memory_total*XMX_DEF_PERCENT/100
         		XMX="-Xmx${XMX}M"
 		} || {
 			XMX="-Xmx${XMX_DEF}"
 		}
         }
-        ARGS=("$(normalize $XMX -Xmx)" "${ARGS[@]}"); 
+        ARGS=("$(normalize $XMX -Xmx)" "${ARGS[@]}");
 else
 	XMX=`echo ${ARGS[@]} | grep -o "\-Xmx[0-9]\+."`
 fi
