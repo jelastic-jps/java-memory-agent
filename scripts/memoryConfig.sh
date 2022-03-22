@@ -20,7 +20,9 @@ G1PERIODIC_LT_DEF=${G1PERIODIC_LT_DEF:-0.3}
 G1PERIODIC_GC_INTERVAL=${G1PERIODIC_GC_INTERVAL:-900k}
 [[ "x${G1PERIODIC_GC_SYS_LOAD_THRESHOLD^^}" == "xAUTO" || -z "$G1PERIODIC_GC_SYS_LOAD_THRESHOLD" ]] && G1PERIODIC_GC_SYS_LOAD_THRESHOLD=${G1PERIODIC_LT_DEF}
 ZCOLLECTION_INTERVAL=${ZCOLLECTION_INTERVAL:-900}
-OPEN_J9_OPTIONS=(-XX:+IdleTuningCompactOnIdle -XX:+IdleTuningGcOnIdle -XX:IdleTuningMinIdleWaitTime=180 -Xjit:waitTimeToEnterDeepIdleMode=50000)
+[ -z "$OPEN_J9_OPTION1S" ] && {
+        OPEN_J9_OPTIONS=(-XX:+IdleTuningCompactOnIdle -XX:+IdleTuningGcOnIdle -XX:IdleTuningMinIdleWaitTime=180 -Xjit:waitTimeToEnterDeepIdleMode=50000)
+} || { OPEN_J9_OPTIONS=($OPEN_J9_OPTIONS); }
 [ -z "$JAVA_VERSION" ] && {
     echo "ERROR: Environment variable JAVA_VERSION is empty or not set"
     exit 1
