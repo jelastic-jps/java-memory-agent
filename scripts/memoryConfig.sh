@@ -18,7 +18,7 @@ GC_SYS_LOAD_THRESHOLD_RATE=${GC_SYS_LOAD_THRESHOLD_RATE:-0.3}
 G1PERIODIC_LT_DEF=$(echo $CPU_COUNT $GC_SYS_LOAD_THRESHOLD_RATE | awk '{print $1*$2}')
 G1PERIODIC_LT_DEF=${G1PERIODIC_LT_DEF:-0.3}
 G1PERIODIC_GC_INTERVAL=${G1PERIODIC_GC_INTERVAL:-900k}
-G1PERIODIC_GC_SYS_LOAD_THRESHOLD=${G1PERIODIC_GC_SYS_LOAD_THRESHOLD:-${G1PERIODIC_LT_DEF}}
+[[ "x${G1PERIODIC_GC_SYS_LOAD_THRESHOLD^^}" == "xAUTO" || -z "$G1PERIODIC_GC_SYS_LOAD_THRESHOLD" ]] && G1PERIODIC_GC_SYS_LOAD_THRESHOLD=${G1PERIODIC_LT_DEF}
 ZCOLLECTION_INTERVAL=${ZCOLLECTION_INTERVAL:-900}
 OPEN_J9_OPTIONS=(-XX:+IdleTuningCompactOnIdle -XX:+IdleTuningGcOnIdle -XX:IdleTuningMinIdleWaitTime=180 -Xjit:waitTimeToEnterDeepIdleMode=50000)
 [ -z "$JAVA_VERSION" ] && {
@@ -126,7 +126,7 @@ if echo ${ARGS[@]} | grep -q "\-XX:+UseG1GC"; then
 	fi
 fi
 
-[ "$VERT_SCALING" != "false" -a "$VERT_SCALING" != "0" ] && {
+[ "${VERT_SCALING^^}" != "FALSE" -a "$VERT_SCALING" != "0" ] && {
 	if [ "x$OPEN_J9" == "xtrue" ]; then
 		for i in ${OPEN_J9_OPTIONS[@]}; do
 			echo ${ARGS[@]} | grep -q '\'${i%=*} || ARGS=($i "${ARGS[@]}");
@@ -173,3 +173,4 @@ then
 fi
 
 set -- "${ARGS[@]}"
+
