@@ -3,9 +3,9 @@
 #defaults
 XMX_DEF=${XMX_DEF:-AUTO}
 #if auto then set XMX = 80% * total available RAM
-XMX_DEF_PERCENT=${XMX_DEF_PERCENT:-80}
+XMX_DEF_PERCENT=${XMX_PERCENT:-80}
 XMS_DEF=${XMS_DEF:-32M}
-XMS_DEF_PERCENT=${XMS_DEF_PERCENT:-AUTO}
+XMS_DEF_PERCENT=${XMS_PERCENT:-AUTO}
 XMINF_DEF=${XMINF_DEF:-0.1}
 XMAXF_DEF=${XMAXF_DEF:-0.3}
 GC_DEF=${GC_DEF:-G1GC}
@@ -27,6 +27,8 @@ ZCOLLECTION_INTERVAL=${ZCOLLECTION_INTERVAL:-900}
     echo "ERROR: Environment variable JAVA_VERSION is empty or not set"
     exit 1
 }
+XMX_DEF_PERCENT=${XMX_DEF_PERCENT//%}
+XMS_DEF_PERCENT=${XMS_DEF_PERCENT//%}
 
 JAVA_VERSION=${JAVA_VERSION/jdk}
 grep -qiE 'OpenJ9' <<< "$JAVA_VERSION" && OPEN_J9=true || OPEN_J9=false
@@ -48,22 +50,10 @@ if [ -f $CGROUP_MEMORY_LIMIT ]; then
     memory_total=$(( memory_total < cgroup_limit ? memory_total : cgroup_limit ))
 fi
 
-if ! echo ${ARGS[@]} | grep -q "\-Xms[0-9]\+."
-then
-    if [[ "X${XMS_DEF_PERCENT^^}" == "XAUTO" ]] ; then
-        [ -z "$XMS" ] && { XMS="-Xms$XMS_DEF"; }
-    else
-        [[ $XMS_DEF_PERCENT > $XMX_DEF_PERCENT ]] && XMS_DEF_PERCENT=$XMX_DEF_PERCENT
-        let XMS=memory_total*XMS_DEF_PERCENT/100
-        XMS="-Xms${XMS}M"
-    fi
-    ARGS=("$(normalize $XMS -Xms)" "${ARGS[@]}");
-fi
-
 if ! echo ${ARGS[@]} | grep -q "\-Xmx[0-9]\+."
 then
-        [ -z "$XMX" ] && {
-		[ "$XMX_DEF" == "AUTO" ] && {
+        [[ -z "$XMX" || "x${XMX^^}" == "xAUTO" ]] && {
+		[ "x${XMX_DEF^^}" == "xAUTO" ] && {
         		let XMX=memory_total*XMX_DEF_PERCENT/100
         		XMX="-Xmx${XMX}M"
 		} || {
@@ -79,6 +69,26 @@ XMX_VALUE=`echo $XMX | grep -o "[0-9]*"`
 XMX_UNIT=`echo $XMX | sed "s/-Xmx//g" | grep -io "g\|m"`
 if [[ $XMX_UNIT == "g" ]] || [[ $XMX_UNIT == "G" ]] ; then 
 	let XMX_VALUE=$XMX_VALUE*1024; 
+fi
+
+if ! echo ${ARGS[@]} | grep -q "\-Xms[0-9]\+."
+then
+    [[ -z "$XMS" || "x${XMS^^}" == "xAUTO" ]] && {
+        if [[ "X${XMS_DEF_PERCENT^^}" == "XAUTO" ]] ; then
+            XMS="-Xms$XMS_DEF"
+        else
+            [[ $XMS_DEF_PERCENT -ge $XMX_DEF_PERCENT ]] && XMS_DEF_PERCENT=$XMX_DEF_PERCENT
+            let XMS=memory_total*XMS_DEF_PERCENT/100
+            XMS="-Xms${XMS}M"
+        fi
+    }
+    XMS_VALUE=`echo $XMS | grep -o "[0-9]*"`
+    XMS_UNIT=`echo $XMS | sed "s/-Xms//g" | grep -io "g\|m"`
+    if [[ $XMS_UNIT == "g" ]] || [[ $XMS_UNIT == "G" ]] ; then
+        let XMS_VALUE=$XMX_VALUE*1024;
+    fi
+    [[ $XMS_VALUE -ge $XMX_VALUE ]] && XMS=${XMX_VALUE}M
+    ARGS=("$(normalize $XMS -Xms)" "${ARGS[@]}");
 fi
 
 if ! echo ${ARGS[@]} | grep -q "\-Xminf[[:digit:]\.]"
@@ -111,7 +121,7 @@ fi
 
 if ! echo ${ARGS[@]} | grep -q "\-XX:+Use.*GC"
 then
-	[[ -z "$GC" ]] && {
+	[[ -z "$GC" || "x${GC^^}" == "xAUTO" ]] && {
         	[[ ! -z $JAVA_VERSION && ${JAVA_VERSION%%[.|u|+]*} -le 7 ]] && {
 	    		[[ "$XMX_VALUE" -ge "$G1_J7_MIN_RAM_THRESHOLD" ]] && GC="-XX:+UseG1GC" || GC="-XX:+UseParNewGC";
 	    	} || {
