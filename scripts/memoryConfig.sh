@@ -106,7 +106,7 @@ fi
 #checking the need of MaxPermSize param 
 if ! echo ${ARGS[@]} | grep -q "\-XX:MaxPermSize"
 then
-        [[ -z "$MAXPERMSIZE" ]] && { 
+        if [[ -z "$MAXPERMSIZE" ]] ; then
         	#if java version <= 7 then configure MaxPermSize otherwise ignore 
         	[[ ! -z $JAVA_VERSION && ${JAVA_VERSION%%[.|u|+]*} -le 7 ]] && {
 			let MAXPERMSIZE_VALUE=$XMX_VALUE/10; 
@@ -115,7 +115,9 @@ then
 				MAXPERMSIZE="-XX:MaxPermSize=${MAXPERMSIZE_VALUE}M";
                 	}
 		}
-  	}
+  	else
+  	    MAXPERMSIZE="$(normalize $MAXPERMSIZE -XX:MaxPermSize=)"
+  	fi
         ARGS=($MAXPERMSIZE "${ARGS[@]}");
 fi
 
