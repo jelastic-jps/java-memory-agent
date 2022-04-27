@@ -20,9 +20,9 @@ G1PERIODIC_LT_DEF=${G1PERIODIC_LT_DEF:-0.3}
 G1PERIODIC_GC_INTERVAL=${G1PERIODIC_GC_INTERVAL:-900k}
 [[ "x${G1PERIODIC_GC_SYS_LOAD_THRESHOLD^^}" == "xAUTO" || -z "$G1PERIODIC_GC_SYS_LOAD_THRESHOLD" ]] && G1PERIODIC_GC_SYS_LOAD_THRESHOLD=${G1PERIODIC_LT_DEF}
 ZCOLLECTION_INTERVAL=${ZCOLLECTION_INTERVAL:-900}
-[ -z "$OPEN_J9_OPTION1S" ] && {
-        OPEN_J9_OPTIONS=(-XX:+IdleTuningCompactOnIdle -XX:+IdleTuningGcOnIdle -XX:IdleTuningMinIdleWaitTime=180 -Xjit:waitTimeToEnterDeepIdleMode=50000)
-} || { OPEN_J9_OPTIONS=($OPEN_J9_OPTIONS); }
+[ -z "$OPENJ9_OPTIONS" ] && {
+        OPENJ9_OPTIONS=(-XX:+IdleTuningCompactOnIdle -XX:+IdleTuningGcOnIdle -XX:IdleTuningMinIdleWaitTime=180 -Xjit:waitTimeToEnterDeepIdleMode=50000)
+} || { OPENJ9_OPTIONS=($OPENJ9_OPTIONS); }
 [ -z "$JAVA_VERSION" ] && {
     echo "ERROR: Environment variable JAVA_VERSION is empty or not set"
     exit 1
@@ -31,7 +31,7 @@ XMX_DEF_PERCENT=${XMX_DEF_PERCENT//%}
 XMS_DEF_PERCENT=${XMS_DEF_PERCENT//%}
 
 JAVA_VERSION=${JAVA_VERSION/jdk}
-grep -qiE 'OpenJ9' <<< "$JAVA_VERSION" && OPEN_J9=true || OPEN_J9=false
+grep -qiE 'OpenJ9' <<< "$JAVA_VERSION" && OPENJ9=true || OPENJ9=false
 
 function normalize {
   var="$(echo ${1} | tr '[A-Z]' '[a-z]')"
@@ -141,8 +141,8 @@ if echo ${ARGS[@]} | grep -q "\-XX:+UseG1GC"; then
 fi
 
 [ "${VERT_SCALING^^}" != "FALSE" -a "$VERT_SCALING" != "0" ] && {
-	if [ "x$OPEN_J9" == "xtrue" ]; then
-		for i in ${OPEN_J9_OPTIONS[@]}; do
+	if [ "x$OPENJ9" == "xtrue" ]; then
+		for i in ${OPENJ9_OPTIONS[@]}; do
 			echo ${ARGS[@]} | grep -q '\'${i%=*} || ARGS=($i "${ARGS[@]}");
 		done
 	elif echo ${ARGS[@]} | grep -q "\-XX:+UseShenandoahGC"; then
