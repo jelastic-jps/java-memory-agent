@@ -66,6 +66,7 @@ if [[ "$1" == "--install" ]] || [[ "$1" == "--uninstall" ]]; then
    done
      
 else
+      . /etc/profile >/dev/null 2>&1
       JAVA_ORIG="$SCRIPT.orig"
       [ -f "$VARIABLES_CONF" ] && source $VARIABLES_CONF
       source $MEMORY_CONF
